@@ -59,7 +59,7 @@ The objective of this project is to design and implement a simple, Rust-based co
     Agentic Workflow Execution can divide a task into smaller steps, call tools when needed, and repeat the process until the task is finished. In comparison, many Rust CLI tools can only work with single prompts and cannot manage complex workflows. Our system, based on ReAct, can automate tasks such as code refactoring. It runs locally, safely, and efficiently, and it uses Rust’s `tokio` for asynchronous execution.
 
 3. **Tool Integration (MCP/ACP)**  
-   - Implement support for the [Model Context Protocol (MCP)](https://github.com/modelcontextprotocol) and [Agent Client Protocol (ACP)](https://github.com/github/agent-protocol).  
+   - Implement support for the Model Context Protocol (MCP) and Agent Client Protocol (ACP).  
        - MCP: Dynamically discover available tools exposed by MCP servers at runtime.
        - ACP: Allow the CLI to interact with external editors (e.g., Cursor, Zed) for code editing, formatting, or build tasks.
    - Invoke external editors or services safely (e.g., code formatting, file editing, or data lookup).  
@@ -78,7 +78,7 @@ The objective of this project is to design and implement a simple, Rust-based co
    - Enable offline usage and lightweight CPU usage by implementing inference backends in Rust.
         - support GPU acceleration if achievable.
     - Support streaming (token-by-token) response display, while ensuring low latency.
-    - allow users to select different models at runtime (e.g., --model llama2) depending on task requirements.
+    - allow users to select different models at runtime (e.g., model llama2) depending on task requirements.
     - Implement error handling if a model is unavailable or fails to interact.
     - Ensure inference API works well for the agentic workflow and session manager to interact with models consistently.
     - Record the inference performance statistics (e.g., tokens per second) for debugging and optimization.
