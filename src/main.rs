@@ -104,6 +104,20 @@ fn main() -> Result<()> {
                                 app.input_mode = InputMode::Insert;
                             }
 
+                            // TAB toggles between the button and the list
+                            KeyCode::Tab => {
+                                app.new_button_selected = !app.new_button_selected;
+                            }
+
+                            KeyCode::Enter => {
+                                if app.new_button_selected {
+                                    // Pressing Enter on the button
+                                    app.new_session();
+                                } else {
+                                    // Do nothing
+                                }
+                            }
+
                             _ => {
                                 // Ignore other keys in normal mode.
                             }

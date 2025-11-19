@@ -44,6 +44,8 @@ pub struct App {
     pub input: String,
     /// Current input mode (Normal or Insert).
     pub input_mode: InputMode,
+    /// Whether the "New Session" button is currently focused.
+    pub new_button_selected: bool,
 }
 
 impl App {
@@ -69,6 +71,7 @@ impl App {
             input: String::new(),
             // Start in Normal mode.
             input_mode: InputMode::Normal,
+            new_button_selected: false,
         }
     }
     

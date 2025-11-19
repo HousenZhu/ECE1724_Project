@@ -11,19 +11,44 @@ use crate::app::{App, MessageFrom, InputMode};
 /// Draw the whole UI based on the current App state.
 pub fn ui(f: &mut Frame, app: &mut App) {
     // Split the screen into left (sessions) and right (chat).
-    let chunks = Layout::default()
+    let main_chunks = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([Constraint::Length(25), Constraint::Min(0)])
         .split(f.area());
+    
+    let left_panel = main_chunks[0];
+    let right_panel = main_chunks[1];
 
     // ===== Left: session list =====
+    let left_chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([
+            Constraint::Length(3),  // For the button
+            Constraint::Min(0),     // For session list
+        ])
+        .split(left_panel);
+
+    // 1) Render the "New Session" button
+    let new_session_label = if app.new_button_selected {
+        // Highlight when focused
+        "▶ [ New Session ]"
+    } else {
+        "  [ New Session ]"
+    };
+
+    let new_session_widget = Paragraph::new(new_session_label)
+        .block(Block::default().borders(Borders::ALL).title("Actions"));
+
+    f.render_widget(new_session_widget, left_chunks[0]);
+
+    // 2) Render session list BELOW the button
     let items: Vec<ListItem> = app
         .sessions
         .iter()
         .map(|s| {
-        // Display both the session ID and title.
-        let label = format!("[{}] {}", &s.id[..4], s.title);
-        ListItem::new(Span::raw(label))
+            // Display both the session ID and title.
+            let label = format!("[{}] {}", &s.id[..4], s.title);
+            ListItem::new(Span::raw(label))
     })
         .collect();
 
@@ -31,14 +56,16 @@ pub fn ui(f: &mut Frame, app: &mut App) {
         .block(Block::default().borders(Borders::ALL).title("Sessions"))
         .highlight_style(Style::default().add_modifier(Modifier::BOLD))
         .highlight_symbol("> ");
-
-    f.render_stateful_widget(sessions_list, chunks[0], &mut app.list_state);
+    
+    f.render_stateful_widget(sessions_list, left_chunks[1], &mut app.list_state);
 
     // ===== Right: top messages + bottom input =====
     let right_chunks = Layout::default()
         .direction(Direction::Vertical)
-        .constraints([Constraint::Min(3), Constraint::Length(3)])
-        .split(chunks[1]);
+        .constraints([
+            Constraint::Min(3),       // Messages
+            Constraint::Length(3)])   // Input
+        .split(right_panel);
 
     // Messages area.
     let active = app.active_session();
