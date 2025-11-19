@@ -37,7 +37,7 @@ pub fn ui(f: &mut Frame, app: &mut App) {
     };
 
     let new_session_widget = Paragraph::new(new_session_label)
-        .block(Block::default().borders(Borders::ALL).title("Actions"));
+        .block(Block::default().borders(Borders::LEFT | Borders::TOP).title("Actions"));
 
     f.render_widget(new_session_widget, left_chunks[0]);
 
@@ -53,7 +53,7 @@ pub fn ui(f: &mut Frame, app: &mut App) {
         .collect();
 
     let sessions_list = List::new(items)
-        .block(Block::default().borders(Borders::ALL).title("Sessions"))
+        .block(Block::default().borders(Borders::LEFT | Borders::BOTTOM).title("Sessions"))
         .highlight_style(Style::default().add_modifier(Modifier::BOLD))
         .highlight_symbol("> ");
     
@@ -79,7 +79,7 @@ pub fn ui(f: &mut Frame, app: &mut App) {
     }
 
     let messages_widget = Paragraph::new(text)
-        .block(Block::default().borders(Borders::ALL).title(active.title.clone()));
+        .block(Block::default().borders(Borders::TOP | Borders::RIGHT).title(active.title.clone()));
     f.render_widget(messages_widget, right_chunks[0]);
 
     // Input area.
@@ -91,6 +91,6 @@ pub fn ui(f: &mut Frame, app: &mut App) {
     let input_title = format!("Input {}", mode_label);
 
     let input_widget = Paragraph::new(app.input.as_str())
-        .block(Block::default().borders(Borders::ALL).title(input_title));
+        .block(Block::default().borders(Borders::BOTTOM | Borders::RIGHT).title(input_title));
     f.render_widget(input_widget, right_chunks[1]);
 }
