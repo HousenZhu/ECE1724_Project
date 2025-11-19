@@ -1,4 +1,5 @@
 use ratatui::widgets::ListState;
+use uuid::Uuid;
 
 /// Who sent the message.
 #[derive(Clone, Copy)]
@@ -41,7 +42,7 @@ impl App {
 
         // Start with one empty session.
         let initial_session = Session {
-            id: "s1".into(),
+            id: Uuid::new_v4().to_string(),
             title: "Session 1".into(),
             messages: Vec::new(),
         };
@@ -60,11 +61,11 @@ impl App {
     
     /// Create a new empty session and switch to it.
     pub fn new_session(&mut self) {
-        let id = self.sessions.len() + 1;
+        let id = Uuid::new_v4().to_string();
 
         self.sessions.push(Session {
-            id: format!("s{}", id),
-            title: format!("Session {}", id),
+            id,
+            title: format!("Session {}", self.sessions.len() + 1),
             messages: Vec::new(),
         });
 
