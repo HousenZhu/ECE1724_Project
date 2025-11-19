@@ -67,20 +67,46 @@ pub fn ui(f: &mut Frame, app: &mut App) {
             Constraint::Length(3)])   // Input
         .split(right_panel);
 
-    // Messages area.
+    // Messages area with scroll support.
     let active = app.active_session();
-    let mut text = String::new();
+    // 1) Build all message lines.
+    let mut all_lines: Vec<String> = Vec::new();
     for m in &active.messages {
         let who = match m.from {
             MessageFrom::User => "You",
             MessageFrom::Assistant => "AI",
         };
-        text.push_str(&format!("{who}: {}\n", m.content));
+        all_lines.push(format!("{who}: {}", m.content));
     }
+
+    // 2) Determine how many lines can be shown in the messages area.
+    let msg_area = right_chunks[0];
+    let viewport_height = msg_area.height as usize;
+    let viewport_height = viewport_height.max(1); // avoid 0
+
+    // 3) Clamp scroll offset so we never scroll beyond the end.
+    let total_lines = all_lines.len();
+    let max_scroll = total_lines.saturating_sub(viewport_height);
+    let scroll = app.msg_scroll.min(max_scroll);
+
+    // 4) Take the visible window of lines.
+    let visible_lines: Vec<String> = if total_lines == 0 {
+        Vec::new()
+    } else {
+        all_lines
+            .into_iter()
+            .skip(scroll)
+            .take(viewport_height)
+            .collect()
+    };
+
+    // 5) Join lines into a single string for Paragraph.
+    let text = visible_lines.join("\n");
+
 
     let messages_widget = Paragraph::new(text)
         .block(Block::default().borders(Borders::TOP | Borders::RIGHT).title(active.title.clone()));
-    f.render_widget(messages_widget, right_chunks[0]);
+    f.render_widget(messages_widget, msg_area);
 
     // Input area.
     let mode_label = match app.input_mode {

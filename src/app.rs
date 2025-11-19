@@ -72,6 +72,8 @@ impl App {
             // Start in Normal mode.
             input_mode: InputMode::Normal,
             new_button_selected: false,
+            // Start at the top of the message list (no scrolling).
+            msg_scroll: 0,
         }
     }
     
@@ -102,17 +104,25 @@ impl App {
 
     /// Move selection to the previous session (if any).
     pub fn prev_session(&mut self) {
+        if self.sessions.is_empty() {
+            return;
+        }   
         if self.active_idx > 0 {
             self.active_idx -= 1;
         }
+        self.msg_scroll = 0;
         self.list_state.select(Some(self.active_idx));
     }
 
     /// Move selection to the next session (if any).
     pub fn next_session(&mut self) {
+        if self.sessions.is_empty() {
+            return;
+        }  
         if self.active_idx + 1 < self.sessions.len() {
             self.active_idx += 1;
         }
+        self.msg_scroll = 0;
         self.list_state.select(Some(self.active_idx));
     }
 
