@@ -1,5 +1,4 @@
 use ratatui::{
-    backend::Backend,
     layout::{Constraint, Direction, Layout},
     style::{Modifier, Style},
     text::Span,
@@ -7,7 +6,7 @@ use ratatui::{
     Frame,
 };
 
-use crate::app::{App, MessageFrom};
+use crate::app::{App, MessageFrom, InputMode};
 
 /// Draw the whole UI based on the current App state.
 pub fn ui(f: &mut Frame, app: &mut App) {
@@ -57,7 +56,14 @@ pub fn ui(f: &mut Frame, app: &mut App) {
     f.render_widget(messages_widget, right_chunks[0]);
 
     // Input area.
+    let mode_label = match app.input_mode {
+        InputMode::Normal => "[NORMAL]",
+        InputMode::Insert => "[INSERT]",
+    };
+
+    let input_title = format!("Input {}", mode_label);
+
     let input_widget = Paragraph::new(app.input.as_str())
-        .block(Block::default().borders(Borders::ALL).title("Input"));
+        .block(Block::default().borders(Borders::ALL).title(input_title));
     f.render_widget(input_widget, right_chunks[1]);
 }

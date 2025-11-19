@@ -23,6 +23,15 @@ pub struct Session {
     pub messages: Vec<Message>,
 }
 
+/// Current input mode of the TUI (similar to Vim).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum InputMode {
+    /// Normal mode: keys are interpreted as commands (q, n, j, k, i, etc.).
+    Normal,
+    /// Insert mode: keys are inserted into the input buffer.
+    Insert,
+}
+
 /// Global application state used by the TUI.
 pub struct App {
     /// All sessions shown in the left sidebar.
@@ -33,6 +42,8 @@ pub struct App {
     pub active_idx: usize,
     /// Current text in the input box.
     pub input: String,
+    /// Current input mode (Normal or Insert).
+    pub input_mode: InputMode,
 }
 
 impl App {
@@ -56,6 +67,8 @@ impl App {
             list_state,
             active_idx: 0,
             input: String::new(),
+            // Start in Normal mode.
+            input_mode: InputMode::Normal,
         }
     }
     

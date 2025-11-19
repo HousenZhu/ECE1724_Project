@@ -6,13 +6,13 @@ use std::time::Duration;
 
 use anyhow::Result;
 use crossterm::{
-    event::{self, Event, KeyCode, KeyModifiers},
+    event::{self, Event, KeyCode},
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use ratatui::{backend::CrosstermBackend, Terminal};
 
-use crate::app::App;
+use crate::app::{App, InputMode};
 use crate::tui::ui as draw_ui;
 
 use serde::Deserialize;
@@ -72,59 +72,87 @@ fn main() -> Result<()> {
         // 2) Handle input events (non-blocking poll).
         if event::poll(Duration::from_millis(50))? {
             if let Event::Key(key) = event::read()? {
-                match key.code {
-                    
-                    // Ctrl+Q to quit the application.
-                    KeyCode::Char('q') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                        break;
-                    }
+                match app.input_mode {
+                    InputMode::Normal => {
+                        match key.code {
+                            // Quit in normal mode.
+                            KeyCode::Char('q') => {
+                                // First restore the terminal, then return Ok.
+                                restore_terminal(terminal)?;
+                                return Ok(());
+                            }
 
-                    // Switch sessions with arrow keys.
-                    KeyCode::Up => app.prev_session(),
-                    KeyCode::Down => app.next_session(),
+                            // New session in normal mode.
+                            KeyCode::Char('n') => {
+                                app.new_session();
+                            }
 
-                    // Ctrl+N to create a new session.
-                    KeyCode::Char('n') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                        // Create a new session and switch to it.
-                        app.new_session();
-                    }
+                            // Move selection up/down using j/k.
+                            KeyCode::Char('j') => {
+                                app.next_session();
+                            }
+                            KeyCode::Char('k') => {
+                                app.prev_session();
+                            }
 
-                    // Handle text input.
-                    KeyCode::Char(c) => {
-                        app.input.push(c);
-                    }
-                    KeyCode::Backspace => {
-                        app.input.pop();
-                    }
+                            // Also allow arrow keys in normal mode.
+                            KeyCode::Up => app.prev_session(),
+                            KeyCode::Down => app.next_session(),
 
-                    // On Enter: send the user message and call Ollama for a response.
-                    KeyCode::Enter => {
-                        let msg = app.input.trim().to_string();
-                        // Add user message first.
-                        if !msg.is_empty() {
-                            app.push_user_message(msg.clone());
-                            app.input.clear();
+                            // Enter insert mode.
+                            KeyCode::Char('i') => {
+                                app.input_mode = InputMode::Insert;
+                            }
 
-                            // Call Ollama
-                            match call_ollama(&msg) {
-                                Ok(reply) => {
-                                    app.push_assistant_message(reply);
-                                }
-                                Err(err) => {
-                                    app.push_assistant_message(format!(
-                                        "Error calling Ollama: {}", err
-                                    ));
-                                }
+                            _ => {
+                                // Ignore other keys in normal mode.
                             }
                         }
                     }
 
-                    _ => {}
+                    InputMode::Insert => {
+                        match key.code {
+                            // Leave insert mode and go back to normal.
+                            KeyCode::Esc => {
+                                app.input_mode = InputMode::Normal;
+                            }
+
+                            // Handle text input.
+                            KeyCode::Char(c) => {
+                                app.input.push(c);
+                            }
+
+                            KeyCode::Backspace => {
+                                app.input.pop();
+                            }
+                            
+                            // On Enter: send the user message and call Ollama for a response.
+                            KeyCode::Enter => {
+                                let msg = app.input.trim().to_string();
+                                // Add user message first.
+                                if !msg.is_empty() {
+                                    app.push_user_message(msg.clone());
+                                    app.input.clear();
+
+                                    // Call Ollama.
+                                    match call_ollama(&msg) {
+                                        Ok(reply) => app.push_assistant_message(reply),
+                                        Err(e) => app.push_assistant_message(format!(
+                                            "Error calling Ollama: {}", e
+                                        )),
+                                    }
+                                }
+                            }
+
+                            // Allow arrow keys in insert mode too.
+                            KeyCode::Up => app.prev_session(),
+                            KeyCode::Down => app.next_session(),
+
+                            _ => {}
+                        }
+                    }
                 }
             }
         }
     }
-
-    restore_terminal(terminal)?;
-    Ok(())
 }
