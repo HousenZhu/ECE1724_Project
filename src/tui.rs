@@ -21,7 +21,11 @@ pub fn ui(f: &mut Frame, app: &mut App) {
     let items: Vec<ListItem> = app
         .sessions
         .iter()
-        .map(|s| ListItem::new(Span::raw(s.title.clone())))
+        .map(|s| {
+        // Display both the session ID and title.
+        let label = format!("[{}] {}", &s.id[..4], s.title);
+        ListItem::new(Span::raw(label))
+    })
         .collect();
 
     let sessions_list = List::new(items)
