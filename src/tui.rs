@@ -1,8 +1,8 @@
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::{Modifier, Style},
-    text::Span,
-    widgets::{Block, Borders, List, ListItem, Paragraph},
+    text::{Span, Line},
+    widgets::{Block, Borders, List, ListItem, Paragraph, Wrap},
     Frame,
 };
 
@@ -69,43 +69,65 @@ pub fn ui(f: &mut Frame, app: &mut App) {
 
     // Messages area with scroll support.
     let active = app.active_session();
-    // 1) Build all message lines.
-    let mut all_lines: Vec<String> = Vec::new();
+
+    // 1) Determine how many lines can be shown in the messages area.
+    let msg_area = right_chunks[0];
+    let viewport_height = msg_area.height.max(1) as usize;
+    let inner_width = msg_area.width.saturating_sub(2) as usize;
+
+    // 2) Build all message lines.
+    let mut lines: Vec<Line> = Vec::new();
+
     for m in &active.messages {
-        let who = match m.from {
-            MessageFrom::User => "You",
-            MessageFrom::Assistant => "AI",
-        };
-        all_lines.push(format!("{who}: {}", m.content));
+        match m.from {
+            MessageFrom::Assistant => {
+                // AI: left side
+                let text = format!("AI: {}", m.content);
+                lines.push(Line::from(vec![
+                    Span::styled(text, Style::default()),
+                ]));
+            }
+            MessageFrom::User => {
+                // You on the right: pad spaces so the text appears at the right edge.
+                let base = format!("You: {}", m.content);
+
+                let len = base.chars().count();
+                let padding = inner_width.saturating_sub(len);
+
+                let padded = format!("{}{}", " ".repeat(padding), base);
+
+                lines.push(Line::from(vec![
+                    Span::styled(padded, Style::default()),
+                ]));
+            }
+        }
     }
 
-    // 2) Determine how many lines can be shown in the messages area.
-    let msg_area = right_chunks[0];
-    let viewport_height = msg_area.height as usize;
-    let viewport_height = viewport_height.max(1); // avoid 0
 
     // 3) Clamp scroll offset so we never scroll beyond the end.
-    let total_lines = all_lines.len();
+    let total_lines = lines.len();
     let max_scroll = total_lines.saturating_sub(viewport_height);
     let scroll = app.msg_scroll.min(max_scroll);
 
     // 4) Take the visible window of lines.
-    let visible_lines: Vec<String> = if total_lines == 0 {
+    let visible_lines: Vec<Line> = if total_lines == 0 {
         Vec::new()
     } else {
-        all_lines
+        lines
             .into_iter()
             .skip(scroll)
             .take(viewport_height)
-            .collect()
+            .collect::<Vec<Line>>()
     };
 
     // 5) Join lines into a single string for Paragraph.
-    let text = visible_lines.join("\n");
-
-
-    let messages_widget = Paragraph::new(text)
-        .block(Block::default().borders(Borders::TOP | Borders::RIGHT).title(active.title.clone()));
+    let messages_widget = Paragraph::new(visible_lines)
+        .block(
+            Block::default()
+                .borders(Borders::TOP | Borders::RIGHT)
+                .title(active.title.clone())
+        )
+        .wrap(Wrap { trim: false });
     f.render_widget(messages_widget, msg_area);
 
     // ===== Bottom input area (input + send button) =====
