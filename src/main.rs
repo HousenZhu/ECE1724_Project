@@ -4,6 +4,7 @@ mod frontend;
 
 use std::io::{stdout, Stdout};
 use std::time::Duration;
+use std::sync::mpsc;
 
 use anyhow::Result;
 use crossterm::{
@@ -15,7 +16,7 @@ use frontend::keyboard::handle_key_event;
 use frontend::mouse::handle_mouse_event;
 use ratatui::{backend::CrosstermBackend, Terminal};
 
-use crate::app::{App};
+use crate::app::{App, BackendEvent};
 use crate::tui::ui as draw_ui;
 
 /// Initialize terminal in raw mode and enter an alternate screen.
@@ -39,8 +40,24 @@ fn restore_terminal(mut terminal: Terminal<CrosstermBackend<Stdout>>) -> Result<
 fn main() -> Result<()> {
     let mut terminal = setup_terminal()?;
     let mut app = App::new();
+    
+    // Create a channel for backend events (assistant streaming).
+    let (tx, rx) = mpsc::channel::<BackendEvent>();
+    app.backend_tx = Some(tx);
 
     loop {
+        // 0) Drain backend events before drawing
+        while let Ok(event) = rx.try_recv() {
+            match event {
+                BackendEvent::AssistantChunk { session_idx, chunk } => {
+                    app.append_assistant_chunk(session_idx, chunk);
+                }
+                BackendEvent::AssistantDone { .. } => {
+                    app.finish_streaming();
+                }
+            }
+        }
+
         // 1) Draw the UI based on current state.
         terminal.draw(|f| draw_ui(f, &mut app))?;
 

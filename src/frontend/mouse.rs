@@ -46,10 +46,7 @@ pub fn handle_mouse_event(me: MouseEvent, app: &mut App) -> Result<()> {
                     // Click is inside the send button
                     let msg = app.input.trim().to_string();
                     if !msg.is_empty() {
-                        // Clear input immediately
-                        app.input.clear();
-                        // Use the same sending logic as Enter
-                        actions::send_message_via_ollama(app, msg)?;
+                        actions::send_user_message_with_streaming(app, msg)?;
                     }
                 }
             }

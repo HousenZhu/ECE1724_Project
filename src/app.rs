@@ -1,3 +1,5 @@
+use std::sync::mpsc::Sender;
+
 use ratatui::widgets::ListState;
 use uuid::Uuid;
 use ratatui::layout::Rect;
@@ -33,6 +35,12 @@ pub enum InputMode {
     Insert,
 }
 
+#[derive(Debug)]
+pub enum BackendEvent {
+    AssistantChunk { session_idx: usize, chunk: String },
+    AssistantDone { session_idx: usize },
+}
+
 /// Global application state used by the TUI.
 pub struct App {
     /// All sessions shown in the left sidebar.
@@ -51,6 +59,10 @@ pub struct App {
     pub msg_scroll: usize,  
     /// Screen area of the send button in the input panel (if drawn).
     pub send_button_area: Option<Rect>,
+    /// Sender used to send backend events (assistant chunks) from worker threads.
+    pub backend_tx: Option<Sender<BackendEvent>>,
+    /// (session_idx, message_idx) of the currently streaming assistant message.
+    pub streaming_assistant: Option<(usize, usize)>,
 }
 
 impl App {
@@ -80,6 +92,8 @@ impl App {
             // Start at the top of the message list (no scrolling).
             msg_scroll: 0,
             send_button_area: None,
+            backend_tx: None,
+            streaming_assistant: None,
         }
     }
     
@@ -146,5 +160,35 @@ impl App {
             from: MessageFrom::Assistant,
             content,
         });
+    }
+
+
+    /// Helper to append an assistant chunk to the currently streaming message.
+    pub fn append_assistant_chunk(&mut self, session_idx: usize, chunk: String) {
+        if let Some((s_idx, m_idx)) = self.streaming_assistant {
+            if s_idx == session_idx {
+                if let Some(session) = self.sessions.get_mut(s_idx) {
+                    if let Some(msg) = session.messages.get_mut(m_idx) {
+                        msg.content.push_str(&chunk);
+                    }
+                }
+            }
+        }
+    }
+
+    /// Helper to start a streaming assistant message (push empty assistant msg).
+    pub fn start_streaming_assistant(&mut self, session_idx: usize) {
+        let session = &mut self.sessions[session_idx];
+        let msg_idx = session.messages.len();
+        session.messages.push(crate::app::Message {
+            from: crate::app::MessageFrom::Assistant,
+            content: String::new(),
+        });
+        self.streaming_assistant = Some((session_idx, msg_idx));
+    }
+
+    /// Helper when streaming is done.
+    pub fn finish_streaming(&mut self) {
+        self.streaming_assistant = None;
     }
 }

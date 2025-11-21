@@ -78,11 +78,7 @@ pub fn handle_key_event(code: KeyCode, app: &mut App) -> Result<bool> {
                 KeyCode::Enter => {
                     let msg = app.input.trim().to_string();
                     if !msg.is_empty() {
-                        // Clear input first.
-                        app.input.clear();
-
-                        // Delegate the actual "send + call ollama" work to the actions module.
-                        actions::send_message_via_ollama(app, msg)?;
+                        actions::send_user_message_with_streaming(app, msg)?;
                     }
                 }
 
