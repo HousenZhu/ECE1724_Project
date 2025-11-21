@@ -1,5 +1,6 @@
 use ratatui::widgets::ListState;
 use uuid::Uuid;
+use ratatui::layout::Rect;
 
 /// Who sent the message.
 #[derive(Clone, Copy)]
@@ -45,7 +46,11 @@ pub struct App {
     /// Current input mode (Normal or Insert).
     pub input_mode: InputMode,
     /// Whether the "New Session" button is currently focused.
-    pub new_button_selected: bool,
+    pub new_button_selected: bool,  
+    /// Vertical scroll offset for the message area on the right.
+    pub msg_scroll: usize,  
+    /// Screen area of the send button in the input panel (if drawn).
+    pub send_button_area: Option<Rect>,
 }
 
 impl App {
@@ -74,6 +79,7 @@ impl App {
             new_button_selected: false,
             // Start at the top of the message list (no scrolling).
             msg_scroll: 0,
+            send_button_area: None,
         }
     }
     

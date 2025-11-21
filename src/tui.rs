@@ -1,5 +1,5 @@
 use ratatui::{
-    layout::{Constraint, Direction, Layout},
+    layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::{Modifier, Style},
     text::Span,
     widgets::{Block, Borders, List, ListItem, Paragraph},
@@ -64,7 +64,7 @@ pub fn ui(f: &mut Frame, app: &mut App) {
         .direction(Direction::Vertical)
         .constraints([
             Constraint::Min(3),       // Messages
-            Constraint::Length(3)])   // Input
+            Constraint::Length(5)])   // Input
         .split(right_panel);
 
     // Messages area with scroll support.
@@ -108,15 +108,94 @@ pub fn ui(f: &mut Frame, app: &mut App) {
         .block(Block::default().borders(Borders::TOP | Borders::RIGHT).title(active.title.clone()));
     f.render_widget(messages_widget, msg_area);
 
-    // Input area.
+    // ===== Bottom input area (input + send button) =====
+    let input_area = right_chunks[1];
+
+    // Determine the label for input mode (NORMAL / INSERT)
     let mode_label = match app.input_mode {
         InputMode::Normal => "[NORMAL]",
         InputMode::Insert => "[INSERT]",
     };
-
     let input_title = format!("Input {}", mode_label);
 
+    // reset the send button area every frame.
+    // It will be set again below.
+    app.send_button_area = None;
+
+    // Split the bottom area horizontally:
+    // - Left: main text input
+    // - Right: a small fixed-width area for the send button
+    // let input_chunks = Layout::default()
+    //     .direction(Direction::Horizontal)
+    //     .constraints([
+    //         Constraint::Min(0),     // Input takes all remaining space
+    //         Constraint::Length(8),  // Fixed width for send button
+    //     ])
+    //     .split(input_area);
+
+    // let input_box = input_chunks[0];
+    // let button_box = input_chunks[1];
+
+    // // 1) Render the input box.
+    // //    Users type messages here in INSERT mode.
+    // let input_widget = Paragraph::new(app.input.as_str())
+    //     .block(
+    //         Block::default()
+    //             .borders(Borders::BOTTOM | Borders::RIGHT)
+    //             .title(input_title),
+    //     );
+    // f.render_widget(input_widget, input_area);
+
+    // // 2) Render the send button on the right
+    // //    This is purely visual for now; actual behavior is handled
+    // //    in the key/mouse event handlers.
+    // let send_button = Paragraph::new("▶ Send")
+    //     .alignment(Alignment::Center)
+    //     .block(
+    //         Block::default()
+    //             .borders(Borders::BOTTOM | Borders::RIGHT)
+    //     );
+    // f.render_widget(send_button, button_box);
+    // let mode_label = match app.input_mode {
+    //     InputMode::Normal => "[NORMAL]",
+    //     InputMode::Insert => "[INSERT]",
+    // };
+
+    // let input_title = format!("Input {}", mode_label);
+
+    // let input_widget = Paragraph::new(app.input.as_str())
+    //     .block(Block::default().borders(Borders::BOTTOM | Borders::RIGHT).title(input_title));
+    // f.render_widget(input_widget, right_chunks[1]);
+    
+    // 1) Render the full-width input box at the bottom.
     let input_widget = Paragraph::new(app.input.as_str())
-        .block(Block::default().borders(Borders::BOTTOM | Borders::RIGHT).title(input_title));
-    f.render_widget(input_widget, right_chunks[1]);
+        .block(
+            Block::default()
+                .borders(Borders::BOTTOM | Borders::RIGHT)
+                .title(input_title),
+        );
+    f.render_widget(input_widget, input_area);
+
+    // 2) Overlay a small "send" icon near the bottom-right corner of the input area.
+    let icon_width = 9;   
+    let icon_height = 3;  
+
+    // Position the icon slightly inside the bottom-right border
+    let icon_x = input_area.x + input_area.width.saturating_sub(icon_width + 1);
+    let icon_y = input_area.y + input_area.height.saturating_sub(icon_height + 1);
+
+    let icon_rect = Rect::new(icon_x, icon_y, icon_width, icon_height);
+
+    // Save this rect into the app so the mouse handler can use it.
+    app.send_button_area = Some(icon_rect);
+
+    // Render a bordered block with a Unicode send icon
+    let send_button = Paragraph::new("➤ Send")
+        .alignment(Alignment::Center)
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+        );
+
+    f.render_widget(send_button, icon_rect);
 }
