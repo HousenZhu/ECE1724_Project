@@ -4,6 +4,7 @@ use std::io::{self, Write};
 
 mod session;
 mod llm; // LLM logic separated
+mod mcp;
 
 use session::SessionManager;
 
@@ -23,7 +24,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("💬 Start typing below:\n");
 
     loop {
-        print!("\x1b[36m({})>\x1b[0m ", manager.model);
+        print!(
+            "\x1b[1;36m{}\x1b[0m-\x1b[35m{}/{}\x1b[0m> ",
+            manager.model,
+            manager.session.id,
+            manager.session.branch
+        );
 
         io::stdout().flush()?;
 
@@ -52,6 +58,12 @@ fn main() -> Result<(), Box<dyn Error>> {
                     let name = x.split_whitespace().nth(1).unwrap();
                     manager.model = name.to_string();
                     println!("🔄 Model switched to '{}'", name);
+                }
+                x if x.starts_with("/mcp ") => {
+                    let prompt = x.strip_prefix("/mcp ").unwrap().trim();
+                    if let Err(e) = manager.handle_mcp_command(prompt) {
+                        eprintln!("❌ MCP Agent Error: {e}");
+                    }
                 }
                 "/session clear" => {
                     manager.clear_all_sessions();

@@ -34,7 +34,7 @@ pub struct SessionManager {
 const LOG_DIR: &str = "logs";
 
 /// Default model name.
-const MODEL: &str = "gemma3";
+const MODEL: &str = "qwen3:8b";
 
 impl SessionManager {
     /// Creates a brand new session with main branch.

@@ -31,10 +31,10 @@ impl SessionManager {
             }))
             .send()?;
 
-        let answer = self.stream_collect(response)?;
+        let answers = self.stream_collect(response)?;
         self.session.messages.push(Message {
             role: "assistant".into(),
-            content: answer,
+            content: answers,
         });
 
         self.maybe_summarize(client)?;
@@ -43,7 +43,7 @@ impl SessionManager {
     }
 
     /// Build conversation history as a prompt string.
-    fn history_string(&self) -> String {
+    pub(crate) fn history_string(&self) -> String {
         self.session
             .messages
             .iter()
