@@ -43,6 +43,9 @@ pub fn handle_key_event(code: KeyCode, app: &mut App) -> Result<bool> {
                     app.new_button_selected = !app.new_button_selected;
                 }
 
+                KeyCode::Char('[') => { app.prev_branch(); }
+                KeyCode::Char(']') => { app.next_branch(); }
+
                 KeyCode::Enter => {
                     if app.new_button_selected {
                         // Pressing Enter on the button creates a new session.
@@ -108,7 +111,19 @@ pub fn handle_key_event(code: KeyCode, app: &mut App) -> Result<bool> {
                 // On Enter: send the user message and call Ollama for a response.
                 KeyCode::Enter => {
                     let msg = app.input.trim().to_string();
-                    if !msg.is_empty() {
+                    if msg.is_empty() {
+                        return Ok(false);
+                    }
+
+                    // Clear input first.
+                    app.input.clear();
+
+                    if let Some(ctx) = app.edit_ctx.take() {
+                        // We are editing an existing user message.
+                        // This will fork a new branch and overwrite that message there.
+                        actions::fork_and_send_from_edit(app, ctx, msg)?;
+                    } else {
+                        // Normal case: send a brand new user message on the active branch.
                         actions::send_user_message_with_streaming(app, msg)?;
                     }
                 }

@@ -94,43 +94,41 @@ pub fn send_user_message_with_streaming(app: &mut App, text: String) -> Result<(
 
 /// Create a new branch starting from the edit point,
 /// then send the edited user message on that new branch.
-fn fork_and_send_from_edit(app: &mut App, ctx: EditContext, text: String) -> Result<()> {
+pub fn fork_and_send_from_edit(app: &mut App, ctx: EditContext, text: String) -> Result<()> {
     let EditContext {
         session_idx,
         branch_idx,
         message_idx,
     } = ctx;
 
+    // 1) Take a snapshot of the old branch so it is preserved.
     let session = &mut app.sessions[session_idx];
     let old_branch = &session.branches[branch_idx];
 
-    // 1) Copy messages up to the edit point (inclusive)
-    let mut new_msgs = old_branch
-        .messages
-        .iter()
-        .take(message_idx + 1)
-        .cloned()
-        .collect::<Vec<_>>();
+    // Clone all messages in the old branch.
+    let mut new_messages = old_branch.messages.clone();
 
-    // 2) Append the edited user message on the new branch
-    new_msgs.push(Message {
-        from: MessageFrom::User,
-        content: text.clone(),
-    });
+    // 2) Overwrite the edited user message in the cloned branch.
+    if let Some(msg) = new_messages.get_mut(message_idx) {
+        msg.content = text.clone();
+    }
 
-    // 3) Create the new branch
-    let new_branch_id = session.branches.len();
+    // 3) Drop everything after the edited message (old assistant reply, etc.).
+    new_messages.truncate(message_idx + 1);
+
+    // 4) Create a new branch with this updated message list.
+    let new_branch_idx = session.branches.len();
     session.branches.push(Branch {
-        id: new_branch_id,
-        name: format!("branch-{new_branch_id}"),
-        messages: new_msgs,
+        id: new_branch_idx,
+        name: format!("branch-{new_branch_idx}"),
+        messages: new_messages,
     });
 
-    // 4) Switch to the new branch
-    session.active_branch = new_branch_id;
+    // 5) Switch to the new branch so the UI shows the edited version.
+    session.active_branch = new_branch_idx;
 
-    // 5) Start streaming assistant reply on the new branch
-    start_streaming_on_branch(app, session_idx, new_branch_id, text)?;
+    // 6) Start streaming a fresh assistant reply on this new branch.
+    start_streaming_on_branch(app, session_idx, new_branch_idx, text)?;
 
     Ok(())
 }

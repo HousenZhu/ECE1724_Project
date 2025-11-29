@@ -4,7 +4,7 @@ use crossterm::{
 };
 use ratatui::layout::Rect;
 
-use crate::app::App;
+use crate::app::{App, EditContext, InputMode};
 use crate::frontend::actions;
 
 /// Width of the left sidebar (sessions panel).
@@ -17,12 +17,28 @@ const LEFT_PANEL_WIDTH: u16 = 25;
 /// Handle mouse events such as clicking and scrolling.
 pub fn handle_mouse_event(me: MouseEvent, app: &mut App) -> Result<()> {
     match me.kind {
-        // ===================== LEFT CLICK =====================
+        MouseEventKind::Moved => {
+            // Mouse hover detection
+            let x = me.column;
+            let y = me.row;
+
+            let mut hovered = None;
+
+            for (msg_idx, rect) in &app.user_msg_hitboxes {
+                if point_in_rect(x, y, *rect) {
+                    hovered = Some(*msg_idx);
+                    break;
+                }
+            }
+
+            app.hovered_user_msg = hovered;
+        }
+        // LEFT CLICK
         MouseEventKind::Up(MouseButton::Left) => {
             let x = me.column;
             let y = me.row;
 
-            // Left panel
+            // ===================== LEFT PANEL =====================
             if x < LEFT_PANEL_WIDTH {
                 // 1) New Session button area = top 3 rows.
                 if y < 3 {
@@ -38,21 +54,54 @@ pub fn handle_mouse_event(me: MouseEvent, app: &mut App) -> Result<()> {
                     app.new_button_selected = false;
                 }
                 return Ok(());
-            } 
-            
-            // Right panel: check send button --------
+            }
+
+            // ===================== RIGHT PANEL =====================
+
+            // 1) Check if the click is inside the send button area.
             if let Some(area) = app.send_button_area {
                 if point_in_rect(x, y, area) {
-                    // Click is inside the send button
+                    // Click is inside the send button.
                     let msg = app.input.trim().to_string();
                     if !msg.is_empty() {
+                        // Let the actions module handle sending + streaming.
                         actions::send_user_message_with_streaming(app, msg)?;
                     }
+                    return Ok(());
                 }
+            }
+
+            // 2) Check if the click is on a user message line (= edit / fork).
+            if let Some((msg_idx, _rect)) = app
+                .user_msg_hitboxes
+                .iter()
+                .find(|(_, r)| point_in_rect(x, y, *r))
+            {
+                let session_idx = app.active_idx;
+                let branch_idx = app.sessions[session_idx].active_branch;
+
+                // Fetch the original user message.
+                let msg = &app.sessions[session_idx]
+                    .branches[branch_idx]
+                    .messages[*msg_idx];
+
+                // Pre-fill the input box with the message content.
+                app.input = msg.content.clone();
+                app.input_mode = InputMode::Insert;
+
+                // Store edit context so that pressing Enter will fork a new branch
+                // starting from this message.
+                app.edit_ctx = Some(EditContext {
+                    session_idx,
+                    branch_idx,
+                    message_idx: *msg_idx,
+                });
+
+                return Ok(());
             }
         }
 
-        // ===================== SCROLL UP ======================
+        // SCROLL UP
         MouseEventKind::ScrollUp => {
             let x = me.column;
 

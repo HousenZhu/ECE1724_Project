@@ -68,68 +68,112 @@ pub fn ui(f: &mut Frame, app: &mut App) {
         .split(right_panel);
 
     // Messages area with scroll support.
-    let active = app.active_session();
-    let branch = &active.branches[active.active_branch];
-
-    // 1) Determine how many lines can be shown in the messages area.
     let msg_area = right_chunks[0];
-    let viewport_height = msg_area.height.max(1) as usize;
+    // Subtract 2 rows for top/bottom borders of the block.
+    let viewport_height = msg_area.height.saturating_sub(2).max(1) as usize;
     let inner_width = msg_area.width.saturating_sub(2) as usize;
 
-    // 2) Build all message lines.
-    let mut lines: Vec<Line> = Vec::new();
+    // 1) Build logical lines and capture session title using an immutable borrow to `app`. 
+    let (session_title, logical_lines): (String, Vec<(Option<usize>, Line)>) = {
+        let active = app.active_session();
+        let branch = &active.branches[active.active_branch];
 
-    for m in &branch.messages {
-        match m.from {
-            MessageFrom::Assistant => {
-                // AI: left side
-                let text = format!("AI: {}", m.content);
-                lines.push(Line::from(vec![
-                    Span::styled(text, Style::default()),
-                ]));
+        let mut lines: Vec<(Option<usize>, Line)> = Vec::new();
+
+        for (idx, m) in branch.messages.iter().enumerate() {
+            match m.from {
+                MessageFrom::Assistant => {
+                    // AI: left side
+                    let text = format!("AI: {}", m.content);
+                    lines.push((
+                        None,
+                        Line::from(Span::styled(text, Style::default())),
+                    ));
+                }
+                MessageFrom::User => {
+                    // User: right-aligned. Pad with spaces on the left so
+                    // the text visually ends near the right border.
+                    let base = format!("You: {}", m.content);
+                    let len = base.chars().count();
+                    let padding = inner_width.saturating_sub(len);
+                    let padded = format!("{}{}", " ".repeat(padding), base);
+
+                    lines.push((
+                        Some(idx),
+                        Line::from(Span::styled(padded, Style::default())),
+                    ));
+                }
             }
-            MessageFrom::User => {
-                // You on the right: pad spaces so the text appears at the right edge.
-                let base = format!("You: {}", m.content);
 
-                let len = base.chars().count();
-                let padding = inner_width.saturating_sub(len);
-
-                let padded = format!("{}{}", " ".repeat(padding), base);
-
-                lines.push(Line::from(vec![
-                    Span::styled(padded, Style::default()),
-                ]));
-            }
+            // Add one empty spacer line after each message
+            lines.push((None, Line::from("")));
         }
-    }
 
+        (active.title.clone(), lines)
+    };
 
-    // 3) Clamp scroll offset so we never scroll beyond the end.
-    let total_lines = lines.len();
+    // 2) Now that the immutable borrow is gone, we can safely mutate `app.user_msg_hitboxes`.
+    app.user_msg_hitboxes.clear();
+
+    // Clamp scroll offset so we never scroll beyond the end.
+    let total_lines = logical_lines.len();
     let max_scroll = total_lines.saturating_sub(viewport_height);
     let scroll = app.msg_scroll.min(max_scroll);
 
-    // 4) Take the visible window of lines.
-    let visible_lines: Vec<Line> = if total_lines == 0 {
-        Vec::new()
-    } else {
-        lines
-            .into_iter()
-            .skip(scroll)
-            .take(viewport_height)
-            .collect::<Vec<Line>>()
-    };
+    // Take the visible window of lines and record hitboxes for user messages.
+    let mut visible_lines: Vec<Line> = Vec::new();
 
-    // 5) Join lines into a single string for Paragraph.
+    for (line_i, (owner, line)) in logical_lines.into_iter().enumerate() {
+        if line_i < scroll || line_i >= scroll + viewport_height {
+            continue;
+        }
+
+        // Compute terminal y coordinate for this logical line.
+        let screen_y = msg_area.y + 1 + (line_i - scroll) as u16;
+
+        // If this line belongs to a user message, record a hitbox so the mouse handler can detect hover/click.
+        if let Some(msg_idx) = owner {
+            let rect = Rect {
+                x: msg_area.x,
+                y: screen_y,
+                width: msg_area.width,
+                height: 1,
+            };
+            app.user_msg_hitboxes.push((msg_idx, rect));
+        }
+
+        visible_lines.push(line);
+    }
+
+    // Render the messages paragraph.
     let messages_widget = Paragraph::new(visible_lines)
         .block(
             Block::default()
                 .borders(Borders::TOP | Borders::RIGHT)
-                .title(active.title.clone())
+                .title(session_title),
         )
         .wrap(Wrap { trim: false });
     f.render_widget(messages_widget, msg_area);
+
+    // If a user message is hovered, render a small "edit" label on the right side of that message line.
+    if let Some(msg_idx) = app.hovered_user_msg {
+        if let Some((_, rect)) = app
+            .user_msg_hitboxes
+            .iter()
+            .find(|(idx, _)| *idx == msg_idx)
+        {
+            let edit_width = 6;
+            let edit_rect = Rect {
+                x: rect.x + rect.width.saturating_sub(edit_width + 1),
+                y: rect.y + 1,
+                width: edit_width,
+                height: 1,
+            };
+
+            let edit_widget = Paragraph::new("edit").alignment(Alignment::Center);
+            f.render_widget(edit_widget, edit_rect);
+        }
+    }
 
     // ===== Bottom input area (input + send button) =====
     let input_area = right_chunks[1];

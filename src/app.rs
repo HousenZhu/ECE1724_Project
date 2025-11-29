@@ -83,7 +83,11 @@ pub struct App {
     /// (session_idx, message_idx) of the currently streaming assistant message.
     pub streaming_assistant: Option<(usize, usize, usize)>,
     /// Editing context (None if not editing)
-    pub edit_ctx: Option<EditContext>
+    pub edit_ctx: Option<EditContext>,
+    /// Hitboxes for user messages in the UI.
+    pub user_msg_hitboxes: Vec<(usize, Rect)>,
+    /// Which user message index is currently hovered.
+    pub hovered_user_msg: Option<usize>,
 }
 
 impl App {
@@ -122,6 +126,8 @@ impl App {
             backend_tx: None,
             streaming_assistant: None,
             edit_ctx: None,
+            user_msg_hitboxes: Vec::new(),
+            hovered_user_msg: None,
         }
     }
     
@@ -245,5 +251,31 @@ impl App {
                 self.streaming_assistant = None;
             }
         }
+    }
+
+    /// Switch to the previous branch in the current session (if any).
+    pub fn prev_branch(&mut self) {
+        let session = &mut self.sessions[self.active_idx];
+        if session.branches.is_empty() {
+            return;
+        }
+        if session.active_branch > 0 {
+            session.active_branch -= 1;
+        }
+        // Reset scroll when switching branches
+        self.msg_scroll = 0;
+    }
+
+    /// Switch to the next branch in the current session (if any).
+    pub fn next_branch(&mut self) {
+        let session = &mut self.sessions[self.active_idx];
+        if session.branches.is_empty() {
+            return;
+        }
+        if session.active_branch + 1 < session.branches.len() {
+            session.active_branch += 1;
+        }
+        // Reset scroll when switching branches
+        self.msg_scroll = 0;
     }
 } 
