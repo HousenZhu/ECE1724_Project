@@ -83,29 +83,97 @@ pub fn ui(f: &mut Frame, app: &mut App) {
         for (idx, m) in branch.messages.iter().enumerate() {
             match m.from {
                 MessageFrom::Assistant => {
-                    // AI: left side
-                    let text = format!("AI: {}", m.content);
-                    lines.push((
-                        None,
-                        Line::from(Span::styled(text, Style::default())),
-                    ));
-                }
-                MessageFrom::User => {
-                    // User: right-aligned. Pad with spaces on the left so
-                    // the text visually ends near the right border.
-                    let base = format!("You: {}", m.content);
-                    let len = base.chars().count();
-                    let padding = inner_width.saturating_sub(len);
-                    let padded = format!("{}{}", " ".repeat(padding), base);
+                    // AI on the left
+                    let prefix = "AI: ";
+                    let raw = m.content.replace("\r\n", "\n");
 
-                    lines.push((
-                        Some(idx),
-                        Line::from(Span::styled(padded, Style::default())),
-                    ));
+                    for (i, seg) in raw.split('\n').enumerate() {
+                        // first visual line uses "AI: ", following lines are indented
+                        let mut current = if i == 0 {
+                            format!("{prefix}{seg}")
+                        } else {
+                            format!("{:width$}{}", "", seg, width = prefix.len())
+                        };
+
+                        while current.chars().count() > inner_width {
+                            // take one screen-width slice
+                            let mut taken = String::new();
+                            let mut count = 0;
+                            for ch in current.chars() {
+                                if count == inner_width {
+                                    break;
+                                }
+                                taken.push(ch);
+                                count += 1;
+                            }
+
+                            lines.push((None, Line::from(taken)));
+
+                            // remaining part
+                            current = current.chars().skip(count).collect();
+                            // indent wrapped lines
+                            current = format!("{:width$}{}", "", current, width = prefix.len());
+                        }
+
+                        lines.push((None, Line::from(current)));
+                    }
+                }
+
+                MessageFrom::User => {
+                    // User on the right: we build left-aligned text first,
+                    // then pad with spaces on the left so that it ends near the right edge.
+                    let prefix = "You: ";
+                    let raw = m.content.replace("\r\n", "\n");
+                    let mut first_line = true;
+
+                    for (i, seg) in raw.split('\n').enumerate() {
+                        let mut current = if i == 0 {
+                            format!("{prefix}{seg}")
+                        } else {
+                            format!("{:width$}{}", "", seg, width = prefix.len())
+                        };
+
+                        while current.chars().count() > inner_width {
+                            let mut taken = String::new();
+                            let mut count = 0;
+                            for ch in current.chars() {
+                                if count == inner_width {
+                                    break;
+                                }
+                                taken.push(ch);
+                                count += 1;
+                            }
+
+                            // right-align this visual line
+                            let len = taken.chars().count();
+                            let padding = inner_width.saturating_sub(len);
+                            let padded = format!("{}{}", " ".repeat(padding), taken);
+
+                            // Only the very first visual line of this user message
+                            // is tagged with Some(idx) for hitbox detection.
+                            let owner = if first_line { Some(idx) } else { None };
+                            first_line = false;
+
+                            lines.push((owner, Line::from(padded)));
+
+                            current = current.chars().skip(count).collect();
+                            current = format!("{:width$}{}", "", current, width = prefix.len());
+                        }
+
+                        // last fragment (shorter than inner_width)
+                        let len = current.chars().count();
+                        let padding = inner_width.saturating_sub(len);
+                        let padded = format!("{}{}", " ".repeat(padding), current);
+
+                        let owner = if first_line { Some(idx) } else { None };
+                        first_line = false;
+
+                        lines.push((owner, Line::from(padded)));
+                    }
                 }
             }
 
-            // Add one empty spacer line after each message
+            // spacer line after each message
             lines.push((None, Line::from("")));
         }
 
@@ -151,8 +219,8 @@ pub fn ui(f: &mut Frame, app: &mut App) {
             Block::default()
                 .borders(Borders::TOP | Borders::RIGHT)
                 .title(session_title),
-        )
-        .wrap(Wrap { trim: false });
+        );
+    
     f.render_widget(messages_widget, msg_area);
 
     // If a user message is hovered, render a small "edit" label on the right side of that message line.
@@ -188,51 +256,6 @@ pub fn ui(f: &mut Frame, app: &mut App) {
     // reset the send button area every frame.
     // It will be set again below.
     app.send_button_area = None;
-
-    // Split the bottom area horizontally:
-    // - Left: main text input
-    // - Right: a small fixed-width area for the send button
-    // let input_chunks = Layout::default()
-    //     .direction(Direction::Horizontal)
-    //     .constraints([
-    //         Constraint::Min(0),     // Input takes all remaining space
-    //         Constraint::Length(8),  // Fixed width for send button
-    //     ])
-    //     .split(input_area);
-
-    // let input_box = input_chunks[0];
-    // let button_box = input_chunks[1];
-
-    // // 1) Render the input box.
-    // //    Users type messages here in INSERT mode.
-    // let input_widget = Paragraph::new(app.input.as_str())
-    //     .block(
-    //         Block::default()
-    //             .borders(Borders::BOTTOM | Borders::RIGHT)
-    //             .title(input_title),
-    //     );
-    // f.render_widget(input_widget, input_area);
-
-    // // 2) Render the send button on the right
-    // //    This is purely visual for now; actual behavior is handled
-    // //    in the key/mouse event handlers.
-    // let send_button = Paragraph::new("▶ Send")
-    //     .alignment(Alignment::Center)
-    //     .block(
-    //         Block::default()
-    //             .borders(Borders::BOTTOM | Borders::RIGHT)
-    //     );
-    // f.render_widget(send_button, button_box);
-    // let mode_label = match app.input_mode {
-    //     InputMode::Normal => "[NORMAL]",
-    //     InputMode::Insert => "[INSERT]",
-    // };
-
-    // let input_title = format!("Input {}", mode_label);
-
-    // let input_widget = Paragraph::new(app.input.as_str())
-    //     .block(Block::default().borders(Borders::BOTTOM | Borders::RIGHT).title(input_title));
-    // f.render_widget(input_widget, right_chunks[1]);
     
     // 1) Render the full-width input box at the bottom.
     let input_widget = Paragraph::new(app.input.as_str())
