@@ -69,6 +69,7 @@ pub fn ui(f: &mut Frame, app: &mut App) {
 
     // Messages area with scroll support.
     let active = app.active_session();
+    let branch = &active.branches[active.active_branch];
 
     // 1) Determine how many lines can be shown in the messages area.
     let msg_area = right_chunks[0];
@@ -78,7 +79,7 @@ pub fn ui(f: &mut Frame, app: &mut App) {
     // 2) Build all message lines.
     let mut lines: Vec<Line> = Vec::new();
 
-    for m in &active.messages {
+    for m in &branch.messages {
         match m.from {
             MessageFrom::Assistant => {
                 // AI: left side

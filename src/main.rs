@@ -49,12 +49,20 @@ fn main() -> Result<()> {
         // 0) Drain backend events before drawing
         while let Ok(event) = rx.try_recv() {
             match event {
-                BackendEvent::AssistantChunk { session_idx, chunk } => {
-                    app.append_assistant_chunk(session_idx, chunk);
+                BackendEvent::AssistantChunk { session_idx, branch_idx, chunk } => {
+                    app.append_assistant_chunk(session_idx, branch_idx, chunk);
                 }
-                BackendEvent::AssistantDone { .. } => {
-                    app.finish_streaming();
+                BackendEvent::AssistantDone { session_idx, branch_idx, } => {
+                    app.finish_streaming(session_idx, branch_idx);
                 }
+
+                // BackendEvent::AssistantChunkOnBranch { session_idx, branch_idx, chunk } => {
+                //     // New behavior: append chunk on a specific branch
+                //     app.append_assistant_chunk_on_branch(session_idx, branch_idx, chunk);
+                // }
+                // BackendEvent::AssistantDoneOnBranch { session_idx, branch_idx } => {
+                //     app.finish_streaming_on_branch(session_idx, branch_idx);
+                // }
             }
         }
 

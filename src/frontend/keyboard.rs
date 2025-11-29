@@ -2,7 +2,7 @@ use anyhow::Result;
 use crossterm::event::KeyCode;
 
 use crate::frontend::actions;
-use crate::app::{App, InputMode};
+use crate::app::{App, InputMode, MessageFrom, EditContext};
 
 /// Handle a single key event.
 /// Returns Ok(true) if the app should exit, Ok(false) otherwise.
@@ -49,6 +49,37 @@ pub fn handle_key_event(code: KeyCode, app: &mut App) -> Result<bool> {
                         app.new_session();
                     } else {
                         // Do nothing for now when pressing Enter on the list.
+                    }
+                }
+
+                KeyCode::Char('e') => {
+                    // Get the active session and branch
+                    let session_idx = app.active_idx;
+                    let session = &app.sessions[session_idx];
+                    let branch_idx = session.active_branch;
+                    let branch = &session.branches[branch_idx];
+
+                    // Find the most recent user message
+                    if let Some((msg_idx, last_user)) = branch
+                        .messages
+                        .iter()
+                        .enumerate()
+                        .rev()
+                        .find(|(_, m)| matches!(m.from, MessageFrom::User))
+                    {
+                        // Load the message content into the input box
+                        app.input.clear();
+                        app.input.push_str(&last_user.content);
+
+                        // Save edit context: editing will fork a new branch
+                        app.edit_ctx = Some(EditContext {
+                            session_idx,
+                            branch_idx,
+                            message_idx: msg_idx,
+                        });
+
+                        // Switch to INSERT mode so the user can modify the message
+                        app.input_mode = InputMode::Insert;
                     }
                 }
 
