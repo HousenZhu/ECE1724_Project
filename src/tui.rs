@@ -20,44 +20,111 @@ pub fn ui(f: &mut Frame, app: &mut App) {
     let right_panel = main_chunks[1];
 
     // ===== Left: session list =====
-    let left_chunks = Layout::default()
-        .direction(Direction::Vertical)
-        .constraints([
-            Constraint::Length(3),  // For the button
-            Constraint::Min(0),     // For session list
-        ])
-        .split(left_panel);
+    if app.sidebar_collapsed {
+        // Draw a thin vertical bar on the left.
+        let bar_block = Block::default()
+            .borders(Borders::LEFT | Borders::TOP | Borders::BOTTOM)
+            .title("Chats");
+        f.render_widget(bar_block, left_panel);
 
-    // 1) Render the "New Session" button
-    let new_session_label = if app.new_button_selected {
-        // Highlight when focused
-        "▶ [ New Session ]"
+        // Place the "≡" icon just inside the bar, one row below the top border.
+        let icon_rect = Rect::new(
+            left_panel.x + 1,  // one column right from the border
+            left_panel.y + 1,  // one row below the top border
+            1,                 // width of a single cell
+            1,                 // height of a single cell
+        );
+
+        let toggle_widget = Paragraph::new("≡")
+            .alignment(Alignment::Left);
+        f.render_widget(toggle_widget, icon_rect);
     } else {
-        "  [ New Session ]"
-    };
+        // Expanded: top header (toggle + New Chat) + session list.
+        let left_chunks = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints([
+                Constraint::Length(3),  // Header row (toggle + New Chat)
+                Constraint::Min(0),     // Session list
+            ])
+            .split(left_panel);
 
-    let new_session_widget = Paragraph::new(new_session_label)
-        .block(Block::default().borders(Borders::LEFT | Borders::TOP).title("Actions"));
+        let header_chunks = Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints([
+                Constraint::Length(3),  // toggle area
+                Constraint::Min(0),     // new chat area
+            ])
+            .split(left_chunks[0]);
 
-    f.render_widget(new_session_widget, left_chunks[0]);
+        let toggle_widget = Paragraph::new("≡")
+            .alignment(Alignment::Center)
+            .block(
+                Block::default()
+                    .borders(Borders::LEFT | Borders::TOP),
+            );
+        f.render_widget(toggle_widget, header_chunks[0]);
 
-    // 2) Render session list BELOW the button
-    let items: Vec<ListItem> = app
-        .sessions
-        .iter()
-        .map(|s| {
-            // Display both the session ID and title.
-            let label = format!("[{}] {}", &s.id[..4], s.title);
-            ListItem::new(Span::raw(label))
-    })
-        .collect();
+        let new_chat_icon = "＋ New";
+        let new_chat_widget = Paragraph::new(new_chat_icon)
+            .alignment(Alignment::Center)
+            .block(
+                Block::default()
+                    .borders(Borders::TOP | Borders::RIGHT)
+                    .title("Chats"),
+            );
+        f.render_widget(new_chat_widget, header_chunks[1]);
 
-    let sessions_list = List::new(items)
-        .block(Block::default().borders(Borders::LEFT | Borders::BOTTOM).title("Sessions"))
-        .highlight_style(Style::default().add_modifier(Modifier::BOLD))
-        .highlight_symbol("> ");
+        let items: Vec<ListItem> = app
+            .sessions
+            .iter()
+            .map(|s| {
+                let label = format!("[{}] {}", &s.id[..4], s.title);
+                ListItem::new(Span::raw(label))
+            })
+            .collect();
+
+        let sessions_list = List::new(items)
+            .block(
+                Block::default()
+                    .borders(Borders::LEFT | Borders::BOTTOM | Borders::RIGHT)
+                    .title("Sessions"),
+            )
+            .highlight_style(Style::default().add_modifier(Modifier::BOLD))
+            .highlight_symbol("> ");
+
+        f.render_stateful_widget(sessions_list, left_chunks[1], &mut app.list_state);
+    }
+
+    // // 1) Render the "New Session" button
+    // let new_session_label = if app.new_button_selected {
+    //     // Highlight when focused
+    //     "▶ [ New Session ]"
+    // } else {
+    //     "  [ New Session ]"
+    // };
+
+    // let new_session_widget = Paragraph::new(new_session_label)
+    //     .block(Block::default().borders(Borders::LEFT | Borders::TOP).title("Actions"));
+
+    // f.render_widget(new_session_widget, left_chunks[0]);
+
+    // // 2) Render session list BELOW the button
+    // let items: Vec<ListItem> = app
+    //     .sessions
+    //     .iter()
+    //     .map(|s| {
+    //         // Display both the session ID and title.
+    //         let label = format!("[{}] {}", &s.id[..4], s.title);
+    //         ListItem::new(Span::raw(label))
+    // })
+    //     .collect();
+
+    // let sessions_list = List::new(items)
+    //     .block(Block::default().borders(Borders::LEFT | Borders::BOTTOM).title("Sessions"))
+    //     .highlight_style(Style::default().add_modifier(Modifier::BOLD))
+    //     .highlight_symbol("> ");
     
-    f.render_stateful_widget(sessions_list, left_chunks[1], &mut app.list_state);
+    // f.render_stateful_widget(sessions_list, left_chunks[1], &mut app.list_state);
 
     // ===== Right: top messages + bottom input =====
     let right_chunks = Layout::default()

@@ -7,8 +7,6 @@ use ratatui::layout::Rect;
 use crate::app::{App, EditContext, InputMode};
 use crate::frontend::actions;
 
-/// Width of the left sidebar (sessions panel).
-const LEFT_PANEL_WIDTH: u16 = 25;
 // const SESSION_LIST_ROW_START: u16 = 4;
 // /// Size of the send button rectangle (must match tui.rs).
 // const SEND_BUTTON_WIDTH: u16 = 7;
@@ -38,12 +36,27 @@ pub fn handle_mouse_event(me: MouseEvent, app: &mut App) -> Result<()> {
             let x = me.column;
             let y = me.row;
 
+            let sidebar_width = app.sidebar_width();
             // ===================== LEFT PANEL =====================
-            if x < LEFT_PANEL_WIDTH {
+            // Click inside left sidebar region
+            if x < sidebar_width {
+                if app.sidebar_collapsed {
+                    // In collapsed mode, any click on the thin bar toggles it.
+                    app.toggle_sidebar();
+                    return Ok(());
+                }
+
+                // Expanded mode:
                 // 1) New Session button area = top 3 rows.
                 if y < 3 {
-                    app.new_session();
-                    app.new_button_selected = true;
+                    if x < 3 {
+                        // Top-left small area: toggle sidebar (≡)
+                        app.toggle_sidebar();
+                    } else {
+                        // Header right area: New Chat button
+                        app.new_session();
+                        app.new_button_selected = true;
+                    }
                     return Ok(());
                 }
 
@@ -55,7 +68,6 @@ pub fn handle_mouse_event(me: MouseEvent, app: &mut App) -> Result<()> {
                 }
                 return Ok(());
             }
-
             // ===================== RIGHT PANEL =====================
 
             // 1) Check if the click is inside the send button area.
@@ -104,8 +116,8 @@ pub fn handle_mouse_event(me: MouseEvent, app: &mut App) -> Result<()> {
         // SCROLL UP
         MouseEventKind::ScrollUp => {
             let x = me.column;
-
-            if x < LEFT_PANEL_WIDTH {
+            let sidebar_width = app.sidebar_width();
+            if x < sidebar_width {
                 // Scroll the session list: move active index up.
                 if app.active_idx > 0 {
                     app.active_idx -= 1;
@@ -122,8 +134,8 @@ pub fn handle_mouse_event(me: MouseEvent, app: &mut App) -> Result<()> {
         // ===================== SCROLL DOWN ====================
         MouseEventKind::ScrollDown => {
             let x = me.column;
-
-            if x < LEFT_PANEL_WIDTH {
+            let sidebar_width = app.sidebar_width();
+            if x < sidebar_width {
                 // Scroll the session list: move active index down.
                 if app.active_idx + 1 < app.sessions.len() {
                     app.active_idx += 1;

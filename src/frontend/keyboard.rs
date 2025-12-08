@@ -55,6 +55,10 @@ pub fn handle_key_event(code: KeyCode, app: &mut App) -> Result<bool> {
                     }
                 }
 
+                KeyCode::Char('s') => {
+                    app.toggle_sidebar();
+                }
+
                 KeyCode::Char('e') => {
                     // Get the active session and branch
                     let session_idx = app.active_idx;

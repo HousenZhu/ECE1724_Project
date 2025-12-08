@@ -82,6 +82,8 @@ pub struct App {
     pub backend_tx: Option<Sender<BackendEvent>>,
     /// (session_idx, message_idx) of the currently streaming assistant message.
     pub streaming_assistant: Option<(usize, usize, usize)>,
+    /// Whether the left session sidebar is collapsed.
+    pub sidebar_collapsed: bool,
     /// Editing context (None if not editing)
     pub edit_ctx: Option<EditContext>,
     /// Hitboxes for user messages in the UI.
@@ -125,6 +127,7 @@ impl App {
             send_button_area: None,
             backend_tx: None,
             streaming_assistant: None,
+            sidebar_collapsed: false,
             edit_ctx: None,
             user_msg_hitboxes: Vec::new(),
             hovered_user_msg: None,
@@ -276,6 +279,21 @@ impl App {
             session.active_branch += 1;
         }
         // Reset scroll when switching branches
+        self.msg_scroll = 0;
+    }
+
+    /// Current width of the left sidebar in columns.
+    pub fn sidebar_width(&self) -> u16 {
+        if self.sidebar_collapsed {
+            3
+        } else {
+            25
+        }
+    }
+
+    /// Toggle the visibility of the left sidebar.
+    pub fn toggle_sidebar(&mut self) {
+        self.sidebar_collapsed = !self.sidebar_collapsed;
         self.msg_scroll = 0;
     }
 } 

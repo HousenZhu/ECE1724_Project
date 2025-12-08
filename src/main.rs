@@ -2,9 +2,13 @@ mod app;
 mod tui;
 mod frontend;
 
-use std::io::{stdout, Stdout};
-use std::time::Duration;
-use std::sync::mpsc;
+use std::{
+    io::{stdout, Stdout},
+    time::Duration,
+    sync::mpsc,
+    env, 
+    process::Command
+};
 
 use anyhow::Result;
 use crossterm::{
@@ -38,6 +42,29 @@ fn restore_terminal(mut terminal: Terminal<CrosstermBackend<Stdout>>) -> Result<
 }
 
 fn main() -> Result<()> {
+    // --- Auto pop-out terminal window on macOS ---
+    // If the process is not already running inside the child window,
+    // launch a new Terminal window running the same executable.
+    if env::var("MYCLI_POPPED").is_err() {
+        let exe = env::current_exe()?;
+
+        // AppleScript that opens a new Terminal window and runs this binary
+        let script = format!(
+            r#"tell application "Terminal"
+    do script "export MYCLI_POPPED=1; '{}'"
+end tell"#,
+            exe.display()
+        );
+
+        // Execute osascript and set an env var in the child
+        Command::new("osascript")
+            .arg("-e")
+            .arg(&script)
+            .spawn()?;
+
+        // Exit the parent process so only the popped-out window stays
+        return Ok(());
+    }
     let mut terminal = setup_terminal()?;
     let mut app = App::new();
     
@@ -56,13 +83,6 @@ fn main() -> Result<()> {
                     app.finish_streaming(session_idx, branch_idx);
                 }
 
-                // BackendEvent::AssistantChunkOnBranch { session_idx, branch_idx, chunk } => {
-                //     // New behavior: append chunk on a specific branch
-                //     app.append_assistant_chunk_on_branch(session_idx, branch_idx, chunk);
-                // }
-                // BackendEvent::AssistantDoneOnBranch { session_idx, branch_idx } => {
-                //     app.finish_streaming_on_branch(session_idx, branch_idx);
-                // }
             }
         }
 
