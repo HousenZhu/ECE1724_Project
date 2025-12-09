@@ -27,7 +27,7 @@ impl SessionManager {
         self.save_to_logs().ok();
         
         // Conversation memory
-        let history = self.history_string();
+        let _history = self.history_string();
         
         // Initial system instruction
         let system_mcp_prompt = format!(
@@ -46,10 +46,13 @@ impl SessionManager {
         );
 
         loop {
+            // Conversation memory
+            let _history = self.history_string();
+
             // Rebuild full prompt each iteration
             let full_prompt = format!("{system_mcp_prompt}\
             User initial prompt:\n{prompt}\n\n\
-            Conversation so far:\n{history}\n\n\
+            Conversation so far:\n{_history}\n\n\
             Continue reasoning or issue next tool call if needed.");
             
             let response = client
@@ -78,7 +81,7 @@ impl SessionManager {
                 // log result of tool into session
                 self.session.messages.push(Message {
                     role: "system".into(),
-                    content: format!("[Tool: {} result]\n{}", tool_call.name, result),
+                    content: format!("[Tool: {}]\nresult: {}", tool_call.name, result),
                 });
                 self.save_to_logs().ok();
             } else {
