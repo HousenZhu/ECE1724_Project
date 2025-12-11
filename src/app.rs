@@ -9,6 +9,7 @@ use std::error::Error;
 use std::fs;
 use std::fs::File;
 use std::path::Path;
+use serde_json;
 
 /// Who sent the message.
 #[derive(Serialize, Deserialize, Debug, Clone, Copy)]
@@ -103,27 +104,32 @@ impl App {
     pub fn new() -> Self {
         let mut list_state = ListState::default();
 
+        let mut sessions = Self::load_logs().unwrap_or_default();
 
-        // Start with one session that has a single "main" branch.
-        let initial_session = Session {
-            id: Uuid::new_v4().to_string(),
-            title: "Session 1".into(),
-            branches: vec![Branch {
-                id: 0,
-                name: "main".into(),
-                messages: Vec::new(),
-            }],
-            active_branch: 0,
-        };
+        if sessions.is_empty() {
+            sessions.push(Session {
+                id: Uuid::new_v4().to_string(),
+                title: "Session 1".to_string(),
+                branches: vec![Branch {
+                    id: 0,
+                    name: "main".to_string(),
+                    messages: vec![],
+                }],
+                active_branch: 0,
+            });
+        }
 
-        let sessions = vec![initial_session];
+        let active_idx = sessions.len() - 1;
+    
 
-        list_state.select(Some(0)); // Select the first (only) session.
+        // let sessions = vec![initial_session];
+
+        list_state.select(Some(active_idx)); // Select the first (only) session.
 
         Self {
             sessions,
             list_state,
-            active_idx: 0,
+            active_idx: active_idx,
             input: String::new(),
             // Start in Normal mode.
             input_mode: InputMode::Normal,
@@ -306,7 +312,7 @@ impl App {
     /// Save current branch as a JSON file in /logs.
     pub fn save_to_logs(&mut self) -> Result<(), Box<dyn Error>> {
         // the saving address of history conversation 
-        let LOG_DIR: &str = "Desktop/Rust/project/ECE1724_Project/logs";
+        let LOG_DIR: &str = "Desktop/Rust/v0/ECE1724_Project/logs";
 
         let session = &mut self.sessions[self.active_idx];
         let branch = &mut session.branches[session.active_branch];
@@ -334,5 +340,66 @@ impl App {
             m.content))
             .collect::<Vec<_>>()
             .join("\n")
+    }
+
+    /// Loads all sessions and branches from /logs.
+    pub fn load_logs() -> Result<Vec<Session>, Box<dyn std::error::Error>> {
+        let LOG_DIR: &str = "Desktop/Rust/v0/ECE1724_Project/logs";
+        let mut sessions_map: std::collections::HashMap<String, Vec<Branch>> = std::collections::HashMap::new();
+
+        // Make sure directory exists
+        if !Path::new(LOG_DIR).exists() {
+            return Ok(vec![]);
+        }
+
+        // Iterate all JSON files
+        for entry in fs::read_dir(LOG_DIR)? {
+            let entry = entry?;
+            let path = entry.path();
+
+            if path.extension().and_then(|s| s.to_str()) != Some("json") {
+                continue;
+            }
+
+            // File name example: "Session 1_main.json"
+            let filename = path.file_stem().unwrap().to_string_lossy();
+
+            // split into "Session 1" and "main"
+            let parts: Vec<&str> = filename.split('_').collect();
+            if parts.len() != 2 {
+                continue;
+            }
+
+            let session_title = parts[0].to_string();
+            let branch_name = parts[1].to_string();
+
+            // Deserialize file into Branch
+            let file = File::open(&path)?;
+            let mut branch: Branch = serde_json::from_reader(file)?;
+
+            // Fix branch name if needed
+            branch.name = branch_name;
+
+            // Insert into map
+            sessions_map
+                .entry(session_title)
+                .or_default()
+                .push(branch);
+        }
+
+        // Convert map into Vec<Session>
+        let mut sessions: Vec<Session> = vec![];
+
+        for (title, branches) in sessions_map {
+            let id = Uuid::new_v4().to_string();
+            sessions.push(Session {
+                id,
+                title,
+                branches: branches.clone(),
+                active_branch: branches.len()-1,
+            });
+        }
+
+        Ok(sessions)
     }
 } 
