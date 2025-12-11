@@ -11,9 +11,11 @@ use crate::app::{App, MessageFrom, InputMode};
 /// Draw the whole UI based on the current App state.
 pub fn ui(f: &mut Frame, app: &mut App) {
     // Split the screen into left (sessions) and right (chat).
+    let sidebar_width = app.sidebar_width();
+
     let main_chunks = Layout::default()
         .direction(Direction::Horizontal)
-        .constraints([Constraint::Length(25), Constraint::Min(0)])
+        .constraints([Constraint::Length(sidebar_width), Constraint::Min(0)])
         .split(f.area());
     
     let left_panel = main_chunks[0];
@@ -55,8 +57,7 @@ pub fn ui(f: &mut Frame, app: &mut App) {
     if app.sidebar_collapsed {
         // Draw a thin vertical bar on the left.
         let bar_block = Block::default()
-            .borders(Borders::LEFT | Borders::TOP | Borders::BOTTOM)
-            .title("Chats");
+            .borders(Borders::LEFT | Borders::TOP | Borders::BOTTOM);
         f.render_widget(bar_block, left_panel);
 
         // Place the "≡" icon just inside the bar, one row below the top border.
@@ -96,7 +97,7 @@ pub fn ui(f: &mut Frame, app: &mut App) {
             );
         f.render_widget(toggle_widget, header_chunks[0]);
 
-        let new_chat_icon = "＋ New";
+        let new_chat_icon = "[✚ New]";
         let new_chat_widget = Paragraph::new(new_chat_icon)
             .alignment(Alignment::Center)
             .block(
