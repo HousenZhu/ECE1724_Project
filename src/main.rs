@@ -3,19 +3,18 @@ use std::error::Error;
 use std::io::{self, Write};
 
 mod session;
-mod llm; // LLM logic separated
+mod llm;
 mod mcp;
+mod api_key;
 
 use session::SessionManager;
 
-/// Entry point of the CLI app.
-/// Handles input loop, dispatches commands, and triggers LLM calls.
 fn main() -> Result<(), Box<dyn Error>> {
     let client = Client::new();
     let mut manager = SessionManager::new();
 
     println!("╔══════════════════════════════════════════╗");
-    println!("║ 🤖  Rust Local AI Console (Chat Client)   ║");
+    println!("║ 🤖  Rust Cloud AI Console (Chat Client)   ║");
     println!("╚══════════════════════════════════════════╝");
     println!("  Model in use  :  {}", manager.model);
     println!("  Switch model  :  /use <model-name>");
@@ -30,7 +29,6 @@ fn main() -> Result<(), Box<dyn Error>> {
             manager.session.id,
             manager.session.branch
         );
-
         io::stdout().flush()?;
 
         let mut input = String::new();
@@ -48,50 +46,51 @@ fn main() -> Result<(), Box<dyn Error>> {
                     println!("👋 Bye!");
                     break;
                 }
-                "/help" => {
-                    print_help();
-                }
-                "/use" => {
-                    println!("📌 Current model: {}", manager.model);
-                }
+                "/help" => print_help(),
+                "/use" => println!("📌 Current model: {}", manager.model),
+
                 x if x.starts_with("/use ") => {
                     let name = x.split_whitespace().nth(1).unwrap();
                     manager.model = name.to_string();
                     println!("🔄 Model switched to '{}'", name);
                 }
+
                 x if x.starts_with("/mcp ") => {
                     let prompt = x.strip_prefix("/mcp ").unwrap().trim();
                     if let Err(e) = manager.handle_mcp_command(prompt) {
                         eprintln!("❌ MCP Agent Error: {e}");
                     }
                 }
-                "/session clear" => {
-                    manager.clear_all_sessions();
-                }
-                "/branch clear" => {
-                    manager.clear_other_branches();
-                }
+
+                "/session clear" => manager.clear_all_sessions(),
+
+                "/branch clear" => manager.clear_other_branches(),
+
                 x if x.starts_with("/save") => {
                     if let Err(e) = manager.save_to_logs() {
                         eprintln!("❌ Save error: {e}");
                     }
                 }
+
                 x if x.starts_with("/load ") => {
                     let id = x.split_whitespace().nth(1);
                     if let Err(e) = manager.load_session(id) {
                         eprintln!("❌ Load error: {e}");
                     }
                 }
+
                 x if x.starts_with("/branch") || x.starts_with("/b ") => {
                     if let Err(e) = manager.handle_branch_command(x) {
                         eprintln!("❌ Branch error: {e}");
                     }
                 }
+
                 x if x.starts_with("/session") => {
                     if let Err(e) = manager.handle_session_command(x) {
                         eprintln!("❌ Session error: {e}");
                     }
                 }
+
                 _ => println!("⚠️ Unknown command. Use /help."),
             }
             continue;
@@ -111,7 +110,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-/// Shows help menu.
+/// Help menu
 fn print_help() {
     println!(
         r#"
@@ -122,15 +121,15 @@ Model:
   /use <model>         Switch to another model
 
 Session:
-  /session list             Show saved sessions
+  /session list             Show stored sessions
   /session current          Show current session ID
   /session delete <id>      Delete a session
   /session clear            Remove ALL sessions
 
 Branch:
-  /branch new <name>        Create a new branch
+  /branch new <name>        Create new branch
   /branch switch <name>     Switch branch
-  /branch list              Show loaded branches
+  /branch list              Show branches
   /branch current           Show current branch
   /branch delete <name>     Delete a branch
   /branch rename <old> <new> Rename a branch
@@ -138,12 +137,12 @@ Branch:
 
 General:
   /save                     Save current branch
-  /load <session_id>        Load a saved session
+  /load <session_id>        Load saved session
   /help                     Show help
   /quit                     Exit
 
 Notes:
-- History is saved in logs/<session>_<branch>.json
+- History saved in logs/<session>_<branch>.json
 - Model context persists unless session/branch is cleared.
 "#
     );

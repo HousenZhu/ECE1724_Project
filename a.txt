@@ -1,1 +1,0 @@
-write a python code that play a number guessing game in terminal, write the code in guess.py
