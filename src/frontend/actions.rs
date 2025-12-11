@@ -71,6 +71,7 @@ pub fn send_user_message_with_streaming(app: &mut App, text: String) -> Result<(
 
     // 3) Clear the input box
     app.input.clear();
+    app.input_scroll = 0; 
 
     // 4) Spawn a background worker to call Ollama and stream chunks
     if let Some(tx) = app.backend_tx.clone() {

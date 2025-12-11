@@ -19,6 +19,38 @@ pub fn ui(f: &mut Frame, app: &mut App) {
     let left_panel = main_chunks[0];
     let right_panel = main_chunks[1];
 
+    let input_min_height: u16 = 3; // minimum rows for input
+    let input_max_height: u16 = 10; // maximum rows for input
+
+    // Reserve some width on the right for the send button (icon + padding).
+    let reserved_for_button: u16 = 9;
+
+    // Inner width for text wrapping inside the input box (without borders and button area).
+    let input_inner_width = right_panel
+        .width
+        .saturating_sub(2)                  // remove left/right borders
+        .saturating_sub(reserved_for_button) as usize;
+
+    let mut input_lines = 1usize;
+    if input_inner_width > 0 && !app.input.is_empty() {
+        let text = app.input.replace("\r\n", "\n");
+        input_lines = text
+            .split('\n')
+            .map(|line| {
+                let len = line.chars().count();
+                if len == 0 {
+                    1
+                } else {
+                    // number of wrapped lines for this logical line
+                    (len - 1) / input_inner_width + 1
+                }
+            })
+            .sum();
+    }
+    
+    let input_height =
+        input_lines.clamp(input_min_height as usize, input_max_height as usize) as u16 + 2; 
+
     // ===== Left: session list =====
     if app.sidebar_collapsed {
         // Draw a thin vertical bar on the left.
@@ -95,48 +127,16 @@ pub fn ui(f: &mut Frame, app: &mut App) {
         f.render_stateful_widget(sessions_list, left_chunks[1], &mut app.list_state);
     }
 
-    // // 1) Render the "New Session" button
-    // let new_session_label = if app.new_button_selected {
-    //     // Highlight when focused
-    //     "▶ [ New Session ]"
-    // } else {
-    //     "  [ New Session ]"
-    // };
-
-    // let new_session_widget = Paragraph::new(new_session_label)
-    //     .block(Block::default().borders(Borders::LEFT | Borders::TOP).title("Actions"));
-
-    // f.render_widget(new_session_widget, left_chunks[0]);
-
-    // // 2) Render session list BELOW the button
-    // let items: Vec<ListItem> = app
-    //     .sessions
-    //     .iter()
-    //     .map(|s| {
-    //         // Display both the session ID and title.
-    //         let label = format!("[{}] {}", &s.id[..4], s.title);
-    //         ListItem::new(Span::raw(label))
-    // })
-    //     .collect();
-
-    // let sessions_list = List::new(items)
-    //     .block(Block::default().borders(Borders::LEFT | Borders::BOTTOM).title("Sessions"))
-    //     .highlight_style(Style::default().add_modifier(Modifier::BOLD))
-    //     .highlight_symbol("> ");
-    
-    // f.render_stateful_widget(sessions_list, left_chunks[1], &mut app.list_state);
-
     // ===== Right: top messages + bottom input =====
     let right_chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
-            Constraint::Min(3),       // Messages
-            Constraint::Length(5)])   // Input
+            Constraint::Min(5),                  // Messages
+            Constraint::Length(input_height)])   // Input auto height
         .split(right_panel);
 
     // Messages area with scroll support.
     let msg_area = right_chunks[0];
-    // Subtract 2 rows for top/bottom borders of the block.
     let viewport_height = msg_area.height.saturating_sub(2).max(1) as usize;
     let inner_width = msg_area.width.saturating_sub(2) as usize;
 
@@ -178,7 +178,7 @@ pub fn ui(f: &mut Frame, app: &mut App) {
 
                             // remaining part
                             current = current.chars().skip(count).collect();
-                            // indent wrapped lines
+                            // indent 1ped lines
                             current = format!("{:width$}{}", "", current, width = prefix.len());
                         }
 
@@ -313,6 +313,8 @@ pub fn ui(f: &mut Frame, app: &mut App) {
     // ===== Bottom input area (input + send button) =====
     let input_area = right_chunks[1];
 
+    app.input_area = Some(input_area);
+
     // Determine the label for input mode (NORMAL / INSERT)
     let mode_label = match app.input_mode {
         InputMode::Normal => "[NORMAL]",
@@ -321,23 +323,89 @@ pub fn ui(f: &mut Frame, app: &mut App) {
     let input_title = format!("Input {}", mode_label);
 
     // reset the send button area every frame.
-    // It will be set again below.
     app.send_button_area = None;
     
     // 1) Render the full-width input box at the bottom.
-    let input_widget = Paragraph::new(app.input.as_str())
+    // Manually wrap the input text into visual lines, using the inner width of the input box.
+    let reserved_for_button: u16 = 11; // must match the value used above
+    let input_inner_width = input_area
+        .width
+        .saturating_sub(2)                      // borders
+        .saturating_sub(reserved_for_button) as usize;
+
+    let mut input_visual_lines: Vec<Line> = Vec::new();
+
+    if input_inner_width == 0 || app.input.is_empty() {
+        input_visual_lines.push(Line::from(app.input.as_str()));
+    } else {
+        let raw = app.input.replace("\r\n", "\n");
+
+        for seg in raw.split('\n') {
+            let mut current = seg.to_string();
+
+            if current.is_empty() {
+                input_visual_lines.push(Line::from(""));
+                continue;
+            }
+
+            while current.chars().count() > input_inner_width {
+                let mut taken = String::new();
+                let mut count = 0;
+
+                for ch in current.chars() {
+                    if count == input_inner_width {
+                        break;
+                    }
+                    taken.push(ch);
+                    count += 1;
+                }
+
+                input_visual_lines.push(Line::from(taken));
+                current = current.chars().skip(count).collect();
+            }
+
+            input_visual_lines.push(Line::from(current));
+        }
+    }
+
+    // 2) Always show the last N lines so the cursor area stays visible.
+    let total_lines = input_visual_lines.len().max(1);
+    let inner_height = input_area.height.saturating_sub(2).max(1) as usize; // minus borders
+    let visible_lines = inner_height;
+
+    // Maximum offset you can scroll up from the bottom.
+    let max_offset = total_lines.saturating_sub(visible_lines);
+    if app.input_scroll > max_offset {
+        app.input_scroll = max_offset;
+    }
+
+    let offset_from_bottom = app.input_scroll;
+    let start = total_lines
+        .saturating_sub(visible_lines + offset_from_bottom)
+        .max(0);
+
+    let visible_input: Vec<Line> = input_visual_lines
+        .into_iter()
+        .skip(start)
+        .take(visible_lines)
+        .collect();
+
+    let input_widget = Paragraph::new(visible_input)
         .block(
             Block::default()
                 .borders(Borders::BOTTOM | Borders::RIGHT)
                 .title(input_title),
         );
+
     f.render_widget(input_widget, input_area);
 
-    // 2) Overlay a small "send" icon near the bottom-right corner of the input area.
-    let icon_width = 9;   
-    let icon_height = 3;  
+    // 3) Overlay a small "send" icon near the bottom-right corner of the input area.
+    let base_icon_width: u16 = 9;
+    let base_icon_height: u16 = 3;
 
-    // Position the icon slightly inside the bottom-right border
+    let icon_width = base_icon_width.min(input_area.width.max(1));
+    let icon_height = base_icon_height.min(input_area.height.max(1));
+
     let icon_x = input_area.x + input_area.width.saturating_sub(icon_width + 1);
     let icon_y = input_area.y + input_area.height.saturating_sub(icon_height + 1);
 

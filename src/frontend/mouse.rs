@@ -116,32 +116,54 @@ pub fn handle_mouse_event(me: MouseEvent, app: &mut App) -> Result<()> {
         // SCROLL UP
         MouseEventKind::ScrollUp => {
             let x = me.column;
+            let y = me.row;
             let sidebar_width = app.sidebar_width();
+
             if x < sidebar_width {
                 // Scroll the session list: move active index up.
                 if app.active_idx > 0 {
                     app.active_idx -= 1;
                     app.list_state.select(Some(app.active_idx));
                 }
-            } else {
-                // Scroll the message area up.
-                if app.msg_scroll > 0 {
+            } else if let Some(area) = app.input_area {
+                // If mouse is inside the input area, scroll the input box.
+                if y >= area.y && y < area.y + area.height {
+                    // Move view further up in the input (offset from bottom).
+                    app.input_scroll = app.input_scroll.saturating_add(1);
+                } else if app.msg_scroll > 0 {
+                    // Otherwise scroll the message area up.
                     app.msg_scroll -= 1;
                 }
+            } else if app.msg_scroll > 0 {
+                // Fallback: if we don't yet have an input rect, just scroll messages.
+                app.msg_scroll -= 1;
             }
         }
 
-        // ===================== SCROLL DOWN ====================
+        // SCROLL DOWN
         MouseEventKind::ScrollDown => {
             let x = me.column;
+            let y = me.row;
             let sidebar_width = app.sidebar_width();
+
             if x < sidebar_width {
                 // Scroll the session list: move active index down.
                 if app.active_idx + 1 < app.sessions.len() {
                     app.active_idx += 1;
+                    app.list_state.select(Some(app.active_idx));
+                }
+            } else if let Some(area) = app.input_area {
+                if y >= area.y && y < area.y + area.height {
+                    // Scroll input back towards the bottom.
+                    if app.input_scroll > 0 {
+                        app.input_scroll -= 1;
+                    }
+                } else {
+                    // Scroll the message area down (clamped in rendering).
+                    app.msg_scroll += 1;
                 }
             } else {
-                // Scroll the message area down (clamped in rendering).
+                // Fallback: scroll messages.
                 app.msg_scroll += 1;
             }
         }

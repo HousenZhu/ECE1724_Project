@@ -97,6 +97,10 @@ pub struct App {
     pub user_msg_hitboxes: Vec<(usize, Rect)>,
     /// Which user message index is currently hovered.
     pub hovered_user_msg: Option<usize>,
+    /// Vertical scroll offset for the input box (0 = bottom)
+    pub input_scroll: usize,
+    // Screen area of the input box
+    pub input_area: Option<Rect>, 
 }
 
 impl App {
@@ -143,6 +147,8 @@ impl App {
             edit_ctx: None,
             user_msg_hitboxes: Vec::new(),
             hovered_user_msg: None,
+            input_scroll: 0,
+            input_area: None, 
         }
     }
     
