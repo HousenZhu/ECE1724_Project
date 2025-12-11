@@ -42,19 +42,29 @@ fn restore_terminal(mut terminal: Terminal<CrosstermBackend<Stdout>>) -> Result<
 }
 
 fn main() -> Result<()> {
-    // Pop out into a separate macOS Terminal window once.
-    #[cfg(target_os = "macos")]
-    {
-        if env::var("MYCLI_POPPED").is_err() {
-            pop_out_on_macos()?;
-            return Ok(());
-        }
+    // --- Auto pop-out terminal window on macOS ---
+    // If the process is not already running inside the child window,
+    // launch a new Terminal window running the same executable.
+    if env::var("MYCLI_POPPED").is_err() {
+        let exe = env::current_exe()?;
+
+        // AppleScript that opens a new Terminal window and runs this binary
+        let script = format!(
+            r#"tell application "Terminal"
+    do script "export MYCLI_POPPED=1; '{}'"
+end tell"#,
+            exe.display()
+        );
+
+        // Execute osascript and set an env var in the child
+        Command::new("osascript")
+            .arg("-e")
+            .arg(&script)
+            .spawn()?;
+
+        // Exit the parent process so only the popped-out window stays
+        return Ok(());
     }
-
-    run_tui()
-}
-
-fn run_tui() -> Result<()> {
     let mut terminal = setup_terminal()?;
     let mut app = App::new();
     
@@ -70,6 +80,7 @@ fn run_tui() -> Result<()> {
                     app.append_assistant_chunk(session_idx, branch_idx, chunk);
                 }
                 BackendEvent::AssistantDone { session_idx, branch_idx, } => {
+                    app.save_to_logs().ok();
                     app.finish_streaming(session_idx, branch_idx);
                 }
 
@@ -100,35 +111,5 @@ fn run_tui() -> Result<()> {
     }
     // After breaking out of the loop, restore the terminal and exit cleanly.
     restore_terminal(terminal)?;
-    Ok(())
-}
-
-#[cfg(target_os = "macos")]
-fn pop_out_on_macos() -> Result<()> {
-    // Find the current executable path.
-    let exe = env::current_exe()?;
-
-    // Small AppleScript snippet:
-    // - activate Terminal
-    // - open a new window running this binary
-    let script = format!(
-        r#"tell application "Terminal"
-    activate
-    do script "export MYCLI_POPPED=1; '{}'"
-end tell"#,
-        exe.display()
-    );
-
-    Command::new("osascript")
-        .arg("-e")
-        .arg(&script)
-        .spawn()?; 
-
-    Ok(())
-}
-
-// On non-macOS, this is a no-op so the code still compiles everywhere.
-#[cfg(not(target_os = "macos"))]
-fn pop_out_on_macos() -> Result<()> {
     Ok(())
 }

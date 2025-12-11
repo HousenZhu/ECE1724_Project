@@ -4,22 +4,28 @@ use ratatui::widgets::ListState;
 use uuid::Uuid;
 use ratatui::layout::Rect;
 
+use serde::{Deserialize, Serialize};
+use std::error::Error;
+use std::fs;
+use std::fs::File;
+use std::path::Path;
+
 /// Who sent the message.
-#[derive(Clone, Copy)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
 pub enum MessageFrom {
     User,
     Assistant,
 }
 
 /// Single message in a branch.
-#[derive(Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Message {
     pub from: MessageFrom,
     pub content: String,
 }
 
 /// A single conversation branch.
-#[derive(Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Branch {
     pub id: usize,              // Unique branch identifier
     pub name: String,           // Branch display name ("main", "branch-1", ...)
@@ -27,7 +33,7 @@ pub struct Branch {
 }
 
 /// One chat session.
-#[derive(Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Session {
     pub id: String,
     pub title: String,
@@ -295,5 +301,38 @@ impl App {
     pub fn toggle_sidebar(&mut self) {
         self.sidebar_collapsed = !self.sidebar_collapsed;
         self.msg_scroll = 0;
+    }
+
+    /// Save current branch as a JSON file in /logs.
+    pub fn save_to_logs(&mut self) -> Result<(), Box<dyn Error>> {
+        // the saving address of history conversation 
+        let LOG_DIR: &str = "Desktop/Rust/project/ECE1724_Project/logs";
+
+        let session = &mut self.sessions[self.active_idx];
+        let branch = &mut session.branches[session.active_branch];
+
+        fs::create_dir_all(LOG_DIR)?;
+        let path = Path::new(LOG_DIR).join(format!("{}_{}.json", session.title, branch.name));
+        let file = File::create(&path)?;
+        serde_json::to_writer_pretty(file, branch)?;
+        // println!("💾 Saved: {}", path.display());
+        Ok(())
+    }
+
+    /// Build conversation history as a prompt string.
+    pub(crate) fn history_string(&mut self) -> String {
+        let session = &mut self.sessions[self.active_idx];
+        let branch = &mut session.branches[session.active_branch];
+
+        branch.messages
+            .iter()
+            .map(|m| format!("{}: {}", 
+                match m.from {
+                    MessageFrom::User => "User",
+                    MessageFrom::Assistant => "Assistant",
+                },
+            m.content))
+            .collect::<Vec<_>>()
+            .join("\n")
     }
 } 

@@ -4,31 +4,43 @@ use anyhow::Result;
 
 use crate::app::{App, BackendEvent, Message, MessageFrom, EditContext, Branch};
 
+use reqwest::blocking::{Client, Response};
 use serde::Deserialize;
+use std::error::Error;
+use std::io::{BufRead, BufReader, Write};
+
+use std::fs;
+use std::fs::File;
+use std::path::Path;
 
 /// Response format for Ollama's /api/generate endpoint.
-#[derive(Debug, Deserialize)]
+#[derive(Deserialize, Debug)]
 struct OllamaResponse {
-    response: String,
+    response: Option<String>,
+    done: Option<bool>,
 }
 
-/// Call Ollama's local LLM through the HTTP API.
-fn call_ollama(prompt: String) -> anyhow::Result<String> {
-    let client = reqwest::blocking::Client::new();
+/// Streams Ollama responses line by line and returns the full combined text.
+fn stream_response_lines<R: std::io::Read>(
+    reader: R,
+    mut on_chunk: impl FnMut(String),
+) -> Result<String, Box<dyn std::error::Error>> {
+    let reader = BufReader::new(reader);
+    let mut buffer = String::new();
 
-    let body = serde_json::json!({
-        "model": "gemma3",
-        "prompt": prompt,
-        "stream": false
-    });
-
-    let resp = client
-        .post("http://localhost:11434/api/generate")
-        .json(&body)
-        .send()?
-        .json::<OllamaResponse>()?;
-
-    Ok(resp.response)
+    for line_result in reader.lines() {
+        let line = line_result?;
+        if let Ok(parsed) = serde_json::from_str::<OllamaResponse>(&line) {
+            if let Some(text) = parsed.response {
+                on_chunk(text.clone());
+                buffer.push_str(&text);
+            }
+            if parsed.done.unwrap_or(false) {
+                break;
+            }
+        }
+    }
+    Ok(buffer)
 }
 
 /// Send a user message on the active branch and start background streaming.
@@ -47,6 +59,13 @@ pub fn send_user_message_with_streaming(app: &mut App, text: String) -> Result<(
         });
     }
 
+    let history = app.history_string();
+    let full_prompt = if history.is_empty() {
+        format!("User: {prompt}\nAssistant:")
+    } else {
+        format!("{history}\nUser: {prompt}\nAssistant:")
+    };
+
     // 2) Create an empty assistant message for streaming output
     app.start_streaming_assistant(session_idx, branch_idx);
 
@@ -56,31 +75,27 @@ pub fn send_user_message_with_streaming(app: &mut App, text: String) -> Result<(
     // 4) Spawn a background worker to call Ollama and stream chunks
     if let Some(tx) = app.backend_tx.clone() {
         thread::spawn(move || {
-            if let Ok(reply) = call_ollama(prompt) {
-                let chars: Vec<char> = reply.chars().collect();
-                let mut buf = String::new();
+            let client = reqwest::blocking::Client::new();
 
-                for c in chars {
-                    buf.push(c);
-                    if buf.len() >= 5 {
-                        let _ = tx.send(BackendEvent::AssistantChunk {
-                            session_idx,
-                            branch_idx,
-                            chunk: buf.clone(),
-                        });
-                        buf.clear();
-                        std::thread::sleep(std::time::Duration::from_millis(40));
-                    }
-                }
+            let response = client
+                .post("http://localhost:11434/api/generate")
+                .json(&serde_json::json!({
+                    "model": "qwen3:1.7b",
+                    "prompt": full_prompt,
+                    "stream": true
+                }))
+                .send();
 
-                if !buf.is_empty() {
+            if let Ok(resp) = response {
+                let _ = stream_response_lines(resp, |chunk| {
                     let _ = tx.send(BackendEvent::AssistantChunk {
                         session_idx,
                         branch_idx,
-                        chunk: buf,
+                        chunk,
                     });
-                }
+                });
 
+                // send final "done"
                 let _ = tx.send(BackendEvent::AssistantDone {
                     session_idx,
                     branch_idx,
@@ -91,6 +106,7 @@ pub fn send_user_message_with_streaming(app: &mut App, text: String) -> Result<(
 
     Ok(())
 }
+
 
 /// Create a new branch starting from the edit point,
 /// then send the edited user message on that new branch.
@@ -146,31 +162,27 @@ fn start_streaming_on_branch(
     // Spawn background worker (same logic as send_user_message_with_streaming)
     if let Some(tx) = app.backend_tx.clone() {
         thread::spawn(move || {
-            if let Ok(reply) = call_ollama(prompt) {
-                let chars: Vec<char> = reply.chars().collect();
-                let mut buf = String::new();
+            let client = reqwest::blocking::Client::new();
 
-                for c in chars {
-                    buf.push(c);
-                    if buf.len() >= 5 {
-                        let _ = tx.send(BackendEvent::AssistantChunk {
-                            session_idx,
-                            branch_idx,
-                            chunk: buf.clone(),
-                        });
-                        buf.clear();
-                        std::thread::sleep(std::time::Duration::from_millis(40));
-                    }
-                }
+            let response = client
+                .post("http://localhost:11434/api/generate")
+                .json(&serde_json::json!({
+                    "model": "qwen3:1.7b",
+                    "prompt": prompt,
+                    "stream": true
+                }))
+                .send();
 
-                if !buf.is_empty() {
+            if let Ok(resp) = response {
+                let _ = stream_response_lines(resp, |chunk| {
                     let _ = tx.send(BackendEvent::AssistantChunk {
                         session_idx,
                         branch_idx,
-                        chunk: buf,
+                        chunk,
                     });
-                }
+                });
 
+                // send final "done"
                 let _ = tx.send(BackendEvent::AssistantDone {
                     session_idx,
                     branch_idx,
@@ -181,3 +193,4 @@ fn start_streaming_on_branch(
 
     Ok(())
 }
+
