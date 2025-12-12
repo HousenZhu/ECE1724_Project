@@ -19,3 +19,4 @@ thiserror = "2.0.17"
 tokio = "1.48.0"
 unicode-width = "0.2.0"
 uuid = { version = "1.18.1", features = ["v4"] }
+regex = "1.12.2"
