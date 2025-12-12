@@ -42,30 +42,21 @@ fn restore_terminal(mut terminal: Terminal<CrosstermBackend<Stdout>>) -> Result<
 }
 
 fn main() -> Result<()> {
-    // --- Auto pop-out terminal window on macOS ---
-    // If the process is not already running inside the child window,
-    // launch a new Terminal window running the same executable.
-    if env::var("MYCLI_POPPED").is_err() {
-        let exe = env::current_exe()?;
-
-        // AppleScript that opens a new Terminal window and runs this binary
-        let script = format!(
-            r#"tell application "Terminal"
-    do script "export MYCLI_POPPED=1; '{}'"
-end tell"#,
-            exe.display()
-        );
-
-        // Execute osascript and set an env var in the child
-        Command::new("osascript")
-            .arg("-e")
-            .arg(&script)
-            .spawn()?;
-
-        // Exit the parent process so only the popped-out window stays
-        return Ok(());
+    // Pop out into a separate macOS Terminal window once.
+    #[cfg(target_os = "macos")]
+    {
+        if env::var("MYCLI_POPPED").is_err() {
+            pop_out_terminal()?;
+            std::process::exit(0);
+        }
     }
+
+    run_tui()
+}
+
+fn run_tui() -> Result<()> {
     let mut terminal = setup_terminal()?;
+
     let mut app = App::new();
     
     // Create a channel for backend events (assistant streaming).
@@ -111,5 +102,31 @@ end tell"#,
     }
     // After breaking out of the loop, restore the terminal and exit cleanly.
     restore_terminal(terminal)?;
+    Ok(())
+}
+
+#[cfg(target_os = "macos")]
+fn pop_out_terminal() -> Result<()> {
+    // Find the current executable path.
+    let exe = env::current_exe()?;
+    let cwd = env::current_dir()?;
+
+    // Small AppleScript snippet:
+    // - activate Terminal
+    // - open a new window running this binary
+    let script = format!(
+        r#"tell application "Terminal"
+    activate
+    do script "cd '{}'; export MYCLI_POPPED=1; '{}'"
+end tell"#,
+        cwd.display(),
+        exe.display()
+    );
+
+    Command::new("osascript")
+        .arg("-e")
+        .arg(&script)
+        .spawn()?; 
+
     Ok(())
 }
