@@ -1,10 +1,12 @@
 use ratatui::{
-    layout::{Alignment, Constraint, Direction, Layout, Rect},
+    layout::{Alignment, Constraint, Direction, Layout, Rect, Margin},
     style::{Modifier, Style},
     text::{Span, Line},
     widgets::{Block, Borders, List, ListItem, Paragraph, Wrap},
     Frame,
 };
+
+use unicode_width::UnicodeWidthStr;
 
 use crate::app::{App, MessageFrom, InputMode};
 
@@ -89,7 +91,22 @@ pub fn ui(f: &mut Frame, app: &mut App) {
             ])
             .split(left_chunks[0]);
 
-        let toggle_widget = Paragraph::new("≡")
+        let side_bar_icon = "☰";
+
+        let r = header_chunks[0];
+        let w = UnicodeWidthStr::width(side_bar_icon) as u16;
+
+        let inner_w = r.width.saturating_sub(2);
+        let start_x = r.x + 1 + inner_w.saturating_sub(w) / 2;
+
+        app.toggle_sidebar_area = Some(Rect::new(
+            start_x,
+            r.y + 1,
+            w,
+            1,
+        ));
+
+        let toggle_widget = Paragraph::new(side_bar_icon)
             .alignment(Alignment::Center)
             .block(
                 Block::default()
@@ -97,7 +114,30 @@ pub fn ui(f: &mut Frame, app: &mut App) {
             );
         f.render_widget(toggle_widget, header_chunks[0]);
 
+        // Store clickable hitboxes for mouse
+        app.toggle_sidebar_area = Some(Rect::new(
+            header_chunks[0].x + 1,
+            header_chunks[0].y + 1,
+            1,
+            1,
+        ));
+
         let new_chat_icon = "[✚ New]";
+
+        // Use a tight clickable area inside the right header block
+        let r = header_chunks[1];
+        let w = UnicodeWidthStr::width(new_chat_icon) as u16;
+
+        let inner_w = r.width.saturating_sub(2); // remove borders
+        let start_x = r.x + 1 + inner_w.saturating_sub(w) / 2;
+
+        app.new_chat_area = Some(Rect::new(
+            start_x,
+            r.y + 1, 
+            w,
+            1,
+        ));
+
         let new_chat_widget = Paragraph::new(new_chat_icon)
             .alignment(Alignment::Center)
             .block(
@@ -126,6 +166,27 @@ pub fn ui(f: &mut Frame, app: &mut App) {
             .highlight_symbol("> ");
 
         f.render_stateful_widget(sessions_list, left_chunks[1], &mut app.list_state);
+
+        app.session_hitboxes.clear();
+
+        let list_outer = left_chunks[1];
+        let list_inner = list_outer.inner(Margin { vertical: 1, horizontal: 1 }); // exclude borders
+
+        for (i, s) in app.sessions.iter().enumerate() {
+            // Must match exactly what you show in the list
+            let label = format!("[{}] {}", &s.id[..4], s.title);
+
+            let w = UnicodeWidthStr::width(label.as_str()) as u16;
+            let w = w.min(list_inner.width.max(1));
+
+            // Each list item is 1 row tall
+            let y = list_inner.y + i as u16;
+
+            // Only create a hitbox if it fits inside the visible list area
+            if y < list_inner.y + list_inner.height {
+                app.session_hitboxes.push((i, Rect::new(list_inner.x, y, w, 1)));
+            }
+        }
     }
 
     // ===== Right: top messages + bottom input =====
@@ -248,7 +309,7 @@ pub fn ui(f: &mut Frame, app: &mut App) {
         (active.title.clone(), lines)
     };
 
-    // 2) Now that the immutable borrow is gone, we can safely mutate `app.user_msg_hitboxes`.
+    // 2) mutate `app.user_msg_hitboxes`.
     app.user_msg_hitboxes.clear();
 
     // Clamp scroll offset so we never scroll beyond the end.

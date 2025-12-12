@@ -47,25 +47,33 @@ pub fn handle_mouse_event(me: MouseEvent, app: &mut App) -> Result<()> {
                 }
 
                 // Expanded mode:
-                // 1) New Session button area = top 3 rows.
-                if y < 3 {
-                    if x < 3 {
-                        // Top-left small area: toggle sidebar (≡)
+                // Click precise buttons instead of a whole header row
+                if let Some(r) = app.toggle_sidebar_area {
+                    if point_in_rect(x, y, r) {
                         app.toggle_sidebar();
-                    } else {
-                        // Header right area: New Chat button
-                        app.new_session();
-                        app.new_button_selected = true;
+                        return Ok(());
                     }
-                    return Ok(());
                 }
 
-                // 2) Session list area starts at row 4.
-                let list_y = y as usize - 4;
-                if list_y < app.sessions.len() {
-                    app.active_idx = list_y;
+                if let Some(r) = app.new_chat_area {
+                    if point_in_rect(x, y, r) {
+                        app.new_session();
+                        app.new_button_selected = true;
+                        return Ok(());
+                    }
+                }
+
+                // Click on a session label (hitbox-based)
+                if let Some((idx, _)) = app
+                    .session_hitboxes
+                    .iter()
+                    .find(|(_, r)| point_in_rect(x, y, *r))
+                {
+                    app.active_idx = *idx;
+                    app.list_state.select(Some(app.active_idx));
                     app.new_button_selected = false;
                 }
+
                 return Ok(());
             }
             // ===================== RIGHT PANEL =====================

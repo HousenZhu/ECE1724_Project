@@ -99,8 +99,13 @@ pub struct App {
     pub hovered_user_msg: Option<usize>,
     /// Vertical scroll offset for the input box (0 = bottom)
     pub input_scroll: usize,
-    // Screen area of the input box
+    // Screen area of the input box, used for mouse hit-testing and scrolling behavior.
     pub input_area: Option<Rect>, 
+    // Clickable area for the sidebar toggle button (collapse / expand).
+    pub toggle_sidebar_area: Option<Rect>,
+    // Clickable area for the "New Chat" button in the sidebar header.
+    pub new_chat_area: Option<Rect>,
+    pub session_hitboxes: Vec<(usize, Rect)>,
 }
 
 impl App {
@@ -149,6 +154,9 @@ impl App {
             hovered_user_msg: None,
             input_scroll: 0,
             input_area: None, 
+            toggle_sidebar_area: None,
+            new_chat_area: None,
+            session_hitboxes: Vec::new(),
         }
     }
     
