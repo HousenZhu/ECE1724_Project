@@ -328,7 +328,7 @@ impl App {
     /// Save current branch as a JSON file in /logs.
     pub fn save_to_logs(&mut self) -> Result<(), Box<dyn Error>> {
         // the saving address of history conversation 
-        let LOG_DIR: &str = "Desktop/Rust/v0/ECE1724_Project/logs";
+        let LOG_DIR: &str = "logs";
 
         let session = &mut self.sessions[self.active_idx];
         let branch = &mut session.branches[session.active_branch];
@@ -360,7 +360,7 @@ impl App {
 
     /// Loads all sessions and branches from /logs.
     pub fn load_logs() -> Result<Vec<Session>, Box<dyn std::error::Error>> {
-        let LOG_DIR: &str = "Desktop/Rust/v0/ECE1724_Project/logs";
+        let LOG_DIR: &str = "logs";
         let mut sessions_map: std::collections::HashMap<String, Vec<Branch>> = std::collections::HashMap::new();
 
         // Make sure directory exists

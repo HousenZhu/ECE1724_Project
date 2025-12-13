@@ -1,6 +1,6 @@
 {
-  "id": 0,
-  "name": "main",
+  "id": 1,
+  "name": "branch-1",
   "messages": [
     {
       "from": "User",
@@ -36,11 +36,11 @@
     },
     {
       "from": "User",
-      "content": "Hello! How are you today? I'm doing wellHello! How are you today? I'm doing wellHello! How are you today? I'm doing well"
+      "content": "hi"
     },
     {
       "from": "Assistant",
-      "content": "I'm doing well, thank you for asking! It looks like you're enthusiastic and doing great too! 😊\n\nIf there's anything you'd like to explore or need help with—whether it's diving deeper into the guessing game, creating more Rust projects, or anything else—feel free to let me know!\n\nDone."
+      "content": "Hello! How can I assist you today?"
     }
   ]
 }
