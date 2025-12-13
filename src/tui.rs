@@ -270,31 +270,39 @@ pub fn ui(f: &mut Frame, app: &mut App) {
                                 count += 1;
                             }
 
-                            // right-align this visual line
-                            let len = taken.chars().count();
-                            let padding = inner_width.saturating_sub(len);
-                            let padded = format!("{}{}", " ".repeat(padding), taken);
-
                             // Only the very first visual line of this user message
                             // is tagged with Some(idx) for hitbox detection.
                             let owner = if first_line { Some(idx) } else { None };
-                            first_line = false;
 
-                            lines.push((owner, Line::from(padded)));
+                            let visual = if first_line {
+                                // right-align the first visual line
+                                let len = taken.chars().count();
+                                let padding = inner_width.saturating_sub(len);
+                                format!("{}{}", " ".repeat(padding), taken)
+                            } else {
+                                taken
+                            };
+                            
+                            first_line = false;
+                            lines.push((owner, Line::from(visual)));
 
                             current = current.chars().skip(count).collect();
                             current = format!("{:width$}{}", "", current, width = prefix.len());
                         }
 
-                        // last fragment (shorter than inner_width)
-                        let len = current.chars().count();
-                        let padding = inner_width.saturating_sub(len);
-                        let padded = format!("{}{}", " ".repeat(padding), current);
-
+                        // last fragment 
                         let owner = if first_line { Some(idx) } else { None };
-                        first_line = false;
 
-                        lines.push((owner, Line::from(padded)));
+                        let visual = if first_line {
+                            let len = current.chars().count();
+                            let padding = inner_width.saturating_sub(len);
+                            format!("{}{}", " ".repeat(padding), current)
+                        } else {
+                            current
+                        };
+
+                        first_line = false;
+                        lines.push((owner, Line::from(visual)));
                     }
                 }
             }
