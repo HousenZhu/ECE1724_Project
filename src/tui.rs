@@ -148,7 +148,7 @@ pub fn ui(f: &mut Frame, app: &mut App) {
             .sessions
             .iter()
             .map(|s| {
-                let label = format!("[{}] {}", &s.id[..4], s.title);
+                let label = format!("{}", s.title);
                 ListItem::new(Span::raw(label))
             })
             .collect();
@@ -171,7 +171,7 @@ pub fn ui(f: &mut Frame, app: &mut App) {
 
         for (i, s) in app.sessions.iter().enumerate() {
             // Must match exactly what you show in the list
-            let label = format!("[{}] {}", &s.id[..4], s.title);
+            let label = format!("{}", s.title);
 
             let w = UnicodeWidthStr::width(label.as_str()) as u16;
             let w = w.min(list_inner.width.max(1));
