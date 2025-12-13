@@ -481,38 +481,58 @@ pub fn ui(f: &mut Frame, app: &mut App) {
         input_area.y + 1,
         input_area.width.saturating_sub(1),   
         input_area.height.saturating_sub(2), 
-    );
+    );    
 
-    let input_text = Paragraph::new(visible_input)
-        .style(
-            Style::default()
-                .bg(Color::Indexed(253))
-            );
+    let input_text = if app.input.is_empty() {
+        Paragraph::new("Ask anything")
+            .style(
+                Style::default()
+                    .fg(Color::DarkGray)
+                    .bg(Color::Indexed(253))
+                    .add_modifier(Modifier::ITALIC)
+            )
+    } else {
+        Paragraph::new(visible_input)
+            .style(
+                Style::default()
+                    .bg(Color::Indexed(253))
+            )
+    };
 
     f.render_widget(input_text, content_area);
+ 
+    // send botton
+    let hit_h: u16 = 3;
+    let hit_w: u16 = 12;
 
-    // 3) Overlay a small "send" icon near the bottom-right corner of the input area.
-    let base_icon_width: u16 = 9;
-    let base_icon_height: u16 = 3;
+    let hit_x = input_area.x + input_area.width.saturating_sub(hit_w + 1);
+    let hit_y = input_area.y + input_area.height.saturating_sub(hit_h + 1);
 
-    let icon_width = base_icon_width.min(input_area.width.max(1));
-    let icon_height = base_icon_height.min(input_area.height.max(1));
+    let hit_rect = Rect::new(hit_x, hit_y, hit_w, hit_h);
 
-    let icon_x = input_area.x + input_area.width.saturating_sub(icon_width + 1);
-    let icon_y = input_area.y + input_area.height.saturating_sub(icon_height + 1);
+    app.send_button_area = Some(hit_rect);
 
-    let icon_rect = Rect::new(icon_x, icon_y, icon_width, icon_height);
+    let label = "➤ Send";
+    let label_w = UnicodeWidthStr::width(label) as u16;
 
-    // Save this rect into the app so the mouse handler can use it.
-    app.send_button_area = Some(icon_rect);
+    let btn_h: u16 = 1;
+    let btn_w: u16 = label_w + 2; 
 
-    // Render a bordered block with a Unicode send icon
-    let send_button = Paragraph::new("➤ Send")
+    let padding_x: u16 = 1; 
+    let padding_y: u16 = 1; 
+
+    let btn_x = hit_rect.x + 1 + hit_rect.width.saturating_sub(btn_w + padding_x);
+    let btn_y = hit_rect.y + 1 + hit_rect.height.saturating_sub(btn_h + padding_y);
+
+    let render_rect = Rect::new(btn_x, btn_y, btn_w, btn_h);
+
+    let send_button = Paragraph::new(label)
         .alignment(Alignment::Center)
-        .block(
-            Block::default()
-                .borders(Borders::ALL)
+        .style(
+            Style::default()
+                .bg(Color::DarkGray)
+                .fg(Color::White),
         );
 
-    f.render_widget(send_button, icon_rect);
+    f.render_widget(send_button, render_rect);
 }
