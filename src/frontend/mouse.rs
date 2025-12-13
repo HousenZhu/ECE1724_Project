@@ -29,6 +29,16 @@ pub fn handle_mouse_event(me: MouseEvent, app: &mut App) -> Result<()> {
                 }
             }
 
+            // If not hovering message text, but hovering the edit label,
+            // keep the previous hovered message so "edit" stays visible.
+            if hovered.is_none() {
+                if let Some((_msg_idx, rect)) = app.edit_area {
+                    if point_in_rect(x, y, rect) {
+                        hovered = app.hovered_user_msg;
+                    }
+                }
+            }
+
             app.hovered_user_msg = hovered;
         }
         // LEFT CLICK
@@ -85,32 +95,30 @@ pub fn handle_mouse_event(me: MouseEvent, app: &mut App) -> Result<()> {
             }
 
             // 2) Check if the click is on a user message line (= edit / fork).
-            if let Some((msg_idx, _rect)) = app
-                .user_msg_hitboxes
-                .iter()
-                .find(|(_, r)| point_in_rect(x, y, *r))
-            {
-                let session_idx = app.active_idx;
-                let branch_idx = app.sessions[session_idx].active_branch;
+            if let Some((msg_idx, r)) = app.edit_area {
+                if point_in_rect(x, y, r) {
+                    let session_idx = app.active_idx;
+                    let branch_idx = app.sessions[session_idx].active_branch;
 
-                // Fetch the original user message.
-                let msg = &app.sessions[session_idx]
-                    .branches[branch_idx]
-                    .messages[*msg_idx];
+                    // Fetch the original user message.
+                    let msg = &app.sessions[session_idx]
+                        .branches[branch_idx]
+                        .messages[msg_idx];
 
-                // Pre-fill the input box with the message content.
-                app.input = msg.content.clone();
-                app.input_mode = InputMode::Insert;
+                    // Pre-fill the input box with the message content.
+                    app.input = msg.content.clone();
+                    app.input_mode = InputMode::Insert;
 
-                // Store edit context so that pressing Enter will fork a new branch
-                // starting from this message.
-                app.edit_ctx = Some(EditContext {
-                    session_idx,
-                    branch_idx,
-                    message_idx: *msg_idx,
-                });
+                    // Store edit context so that pressing Enter will fork a new branch
+                    // starting from this message.
+                    app.edit_ctx = Some(EditContext {
+                        session_idx,
+                        branch_idx,
+                        message_idx: msg_idx,
+                    });
 
-                return Ok(());
+                    return Ok(());
+                }
             }
         }
 

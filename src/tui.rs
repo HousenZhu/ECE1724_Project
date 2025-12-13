@@ -272,7 +272,7 @@ pub fn ui(f: &mut Frame, app: &mut App) {
 
                             // Only the very first visual line of this user message
                             // is tagged with Some(idx) for hitbox detection.
-                            let owner = if first_line { Some(idx) } else { None };
+                            let owner = Some(idx);
 
                             let visual = if first_line {
                                 // right-align the first visual line
@@ -291,7 +291,7 @@ pub fn ui(f: &mut Frame, app: &mut App) {
                         }
 
                         // last fragment 
-                        let owner = if first_line { Some(idx) } else { None };
+                        let owner = Some(idx);
 
                         let visual = if first_line {
                             let len = current.chars().count();
@@ -343,7 +343,12 @@ pub fn ui(f: &mut Frame, app: &mut App) {
                 width: msg_area.width,
                 height: 1,
             };
-            app.user_msg_hitboxes.push((msg_idx, rect));
+            
+            if let Some(pos) = app.user_msg_hitboxes.iter().position(|(i, _)| *i == msg_idx) {
+                app.user_msg_hitboxes[pos] = (msg_idx, rect);
+            } else {
+                app.user_msg_hitboxes.push((msg_idx, rect));
+            }
         }
 
         visible_lines.push(line);
@@ -360,6 +365,7 @@ pub fn ui(f: &mut Frame, app: &mut App) {
     f.render_widget(messages_widget, msg_area);
 
     // If a user message is hovered, render a small "edit" label on the right side of that message line.
+    app.edit_area = None;
     if let Some(msg_idx) = app.hovered_user_msg {
         if let Some((_, rect)) = app
             .user_msg_hitboxes
@@ -368,13 +374,16 @@ pub fn ui(f: &mut Frame, app: &mut App) {
         {
             let edit_width = 6;
             let edit_rect = Rect {
-                x: rect.x + rect.width.saturating_sub(edit_width + 1),
+                x: rect.x + rect.width.saturating_sub(edit_width + 1) + 1,
                 y: rect.y + 1,
                 width: edit_width,
                 height: 1,
             };
+            
+            // Store edit rect 
+            app.edit_area = Some((msg_idx, edit_rect));
 
-            let edit_widget = Paragraph::new("edit").alignment(Alignment::Center);
+            let edit_widget = Paragraph::new("\u{1F4DD}").alignment(Alignment::Center);
             f.render_widget(edit_widget, edit_rect);
         }
     }

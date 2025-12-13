@@ -106,6 +106,7 @@ pub struct App {
     // Clickable area for the "New Chat" button in the sidebar header.
     pub new_chat_area: Option<Rect>,
     pub session_hitboxes: Vec<(usize, Rect)>,
+    pub edit_area: Option<(usize, Rect)>,
 }
 
 impl App {
@@ -157,6 +158,7 @@ impl App {
             toggle_sidebar_area: None,
             new_chat_area: None,
             session_hitboxes: Vec::new(),
+            edit_area: None,
         }
     }
     
