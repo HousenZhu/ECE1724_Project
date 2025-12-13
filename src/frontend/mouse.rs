@@ -40,14 +40,7 @@ pub fn handle_mouse_event(me: MouseEvent, app: &mut App) -> Result<()> {
             // ===================== LEFT PANEL =====================
             // Click inside left sidebar region
             if x < sidebar_width {
-                if app.sidebar_collapsed {
-                    // In collapsed mode, any click on the thin bar toggles it.
-                    app.toggle_sidebar();
-                    return Ok(());
-                }
 
-                // Expanded mode:
-                // Click precise buttons instead of a whole header row
                 if let Some(r) = app.toggle_sidebar_area {
                     if point_in_rect(x, y, r) {
                         app.toggle_sidebar();

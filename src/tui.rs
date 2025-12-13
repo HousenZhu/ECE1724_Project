@@ -53,26 +53,35 @@ pub fn ui(f: &mut Frame, app: &mut App) {
     }
     
     let input_height =
-        input_lines.clamp(input_min_height as usize, input_max_height as usize) as u16 + 2; 
+        input_lines.clamp(input_min_height as usize, input_max_height as usize) as u16 + 2;
+        
+    let toggle_sidebar_icon = "☰";
+    let toggle_sidebar_icon_w = UnicodeWidthStr::width(toggle_sidebar_icon) as u16;
 
     // ===== Left: session list =====
-    if app.sidebar_collapsed {
-        // Draw a thin vertical bar on the left.
-        let bar_block = Block::default()
-            .borders(Borders::LEFT | Borders::TOP | Borders::BOTTOM);
+    if app.sidebar_collapsed {        
+        // collapsed bar
+        let bar_block = Block::default().borders(Borders::LEFT | Borders::TOP | Borders::BOTTOM);
         f.render_widget(bar_block, left_panel);
 
-        // Place the "≡" icon just inside the bar, one row below the top border.
-        let icon_rect = Rect::new(
-            left_panel.x + 1,  // one column right from the border
-            left_panel.y + 1,  // one row below the top border
-            1,                 // width of a single cell
-            1,                 // height of a single cell
+        // clickable icon cell
+        let toggle_render_rect = Rect::new(
+            left_panel.x + 1, 
+            left_panel.y + 1, 
+            toggle_sidebar_icon_w.max(1), 
+            1,
         );
+        
+        f.render_widget(Paragraph::new(toggle_sidebar_icon), toggle_render_rect);
 
-        let toggle_widget = Paragraph::new("≡")
-            .alignment(Alignment::Left);
-        f.render_widget(toggle_widget, icon_rect);
+        let toggle_hitbox = Rect::new(
+            toggle_render_rect.x,            
+            toggle_render_rect.y,                 
+            2,         
+            1,
+        );
+        app.toggle_sidebar_area = Some(toggle_hitbox);
+
     } else {
         // Expanded: top header (toggle + New Chat) + session list.
         let left_chunks = Layout::default()
@@ -91,36 +100,24 @@ pub fn ui(f: &mut Frame, app: &mut App) {
             ])
             .split(left_chunks[0]);
 
-        let side_bar_icon = "☰";
-
-        let r = header_chunks[0];
-        let w = UnicodeWidthStr::width(side_bar_icon) as u16;
-
-        let inner_w = r.width.saturating_sub(2);
-        let start_x = r.x + 1 + inner_w.saturating_sub(w) / 2;
+        let toggle_r = header_chunks[0];
+        let inner_toggle_sidebar_icon_w = toggle_r.width.saturating_sub(2); // remove borders
+        let toggle_start_x = toggle_r.x + 2 + inner_toggle_sidebar_icon_w.saturating_sub(toggle_sidebar_icon_w) / 2;
 
         app.toggle_sidebar_area = Some(Rect::new(
-            start_x,
-            r.y + 1,
-            w,
+            toggle_start_x,
+            toggle_r.y + 1, 
+            2,
             1,
         ));
 
-        let toggle_widget = Paragraph::new(side_bar_icon)
+        let toggle_widget = Paragraph::new(toggle_sidebar_icon)
             .alignment(Alignment::Center)
             .block(
                 Block::default()
-                    .borders(Borders::LEFT | Borders::TOP),
+                    .borders(Borders::TOP | Borders::LEFT)
             );
-        f.render_widget(toggle_widget, header_chunks[0]);
-
-        // Store clickable hitboxes for mouse
-        app.toggle_sidebar_area = Some(Rect::new(
-            header_chunks[0].x + 1,
-            header_chunks[0].y + 1,
-            1,
-            1,
-        ));
+        f.render_widget(toggle_widget, toggle_r);
 
         let new_chat_icon = "[✚ New]";
 
@@ -129,7 +126,7 @@ pub fn ui(f: &mut Frame, app: &mut App) {
         let w = UnicodeWidthStr::width(new_chat_icon) as u16;
 
         let inner_w = r.width.saturating_sub(2); // remove borders
-        let start_x = r.x + 1 + inner_w.saturating_sub(w) / 2;
+        let start_x = r.x + 2 + inner_w.saturating_sub(w) / 2;
 
         app.new_chat_area = Some(Rect::new(
             start_x,
