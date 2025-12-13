@@ -1,8 +1,8 @@
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect, Margin},
-    style::{Modifier, Style},
+    style::{Modifier, Style, Color},
     text::{Span, Line},
-    widgets::{Block, Borders, List, ListItem, Paragraph, Wrap},
+    widgets::{Block, Borders, BorderType, List, ListItem, Paragraph, Wrap},
     Frame,
 };
 
@@ -468,14 +468,28 @@ pub fn ui(f: &mut Frame, app: &mut App) {
         .take(visible_lines)
         .collect();
 
-    let input_widget = Paragraph::new(visible_input)
-        .block(
-            Block::default()
-                .borders(Borders::BOTTOM | Borders::RIGHT)
-                .title(input_title),
-        );
+    // draw border/title
+    let input_block = Block::default()
+        .borders(Borders::BOTTOM | Borders::RIGHT)
+        .border_type(BorderType::Rounded)
+        .title(input_title);
 
-    f.render_widget(input_widget, input_area);
+    f.render_widget(input_block, input_area);
+
+    let content_area = Rect::new(
+        input_area.x,
+        input_area.y + 1,
+        input_area.width.saturating_sub(1),   
+        input_area.height.saturating_sub(2), 
+    );
+
+    let input_text = Paragraph::new(visible_input)
+        .style(
+            Style::default()
+                .bg(Color::Indexed(253))
+            );
+
+    f.render_widget(input_text, content_area);
 
     // 3) Overlay a small "send" icon near the bottom-right corner of the input area.
     let base_icon_width: u16 = 9;
