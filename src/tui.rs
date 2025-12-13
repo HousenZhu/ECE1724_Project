@@ -320,7 +320,9 @@ pub fn ui(f: &mut Frame, app: &mut App) {
     // Clamp scroll offset so we never scroll beyond the end.
     let total_lines = logical_lines.len();
     let max_scroll = total_lines.saturating_sub(viewport_height);
-    let scroll = app.msg_scroll.min(max_scroll);
+    app.msg_scroll = app.msg_scroll.min(max_scroll);
+
+    let scroll = app.msg_scroll;
 
     // Take the visible window of lines and record hitboxes for user messages.
     let mut visible_lines: Vec<Line> = Vec::new();
