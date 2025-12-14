@@ -41,6 +41,18 @@
     {
       "from": "Assistant",
       "content": "I'm doing well, thank you for asking! It looks like you're enthusiastic and doing great too! 😊\n\nIf there's anything you'd like to explore or need help with—whether it's diving deeper into the guessing game, creating more Rust projects, or anything else—feel free to let me know!\n\nDone."
+    },
+    {
+      "from": "Assistant",
+      "content": "\n📖 MyCLI Help\n\nNORMAL MODE\n  q          Quit\n  n          New session\n  j / k      Next / previous session\n  ↑ / ↓      Move session selection\n  [ / ]      Previous / next branch\n  TAB        Toggle new-session button\n  s          Toggle sidebar\n  e          Edit last user message\n  i          Enter insert mode\n\nINSERT MODE\n  Enter      Send message\n  Esc        Back to normal mode\n\nTIPS\n  • Editing a message forks a new branch\n\n"
+    },
+    {
+      "from": "User",
+      "content": "hi"
+    },
+    {
+      "from": "Assistant",
+      "content": "Hello! I'm here and ready to help. How can I assist you today? \n\nDone."
     }
   ]
 }

@@ -484,13 +484,27 @@ pub fn ui(f: &mut Frame, app: &mut App) {
     );    
 
     let input_text = if app.input.is_empty() {
-        Paragraph::new("Ask anything")
-            .style(
-                Style::default()
-                    .fg(Color::DarkGray)
-                    .bg(Color::Indexed(253))
-                    .add_modifier(Modifier::ITALIC)
-            )
+        match app.input_mode {
+            InputMode::Normal => {
+                Paragraph::new("Press 'h' for help information; Press 'i' to enter INSERT mode")
+                .style(
+                    Style::default()
+                        .fg(Color::DarkGray)
+                        .bg(Color::Indexed(253))
+                        .add_modifier(Modifier::ITALIC)
+                )
+            },
+            InputMode::Insert => {
+                Paragraph::new("Send a message")
+                .style(
+                    Style::default()
+                        .fg(Color::DarkGray)
+                        .bg(Color::Indexed(253))
+                        .add_modifier(Modifier::ITALIC)
+                )
+            },
+        }
+        
     } else {
         Paragraph::new(visible_input)
             .style(

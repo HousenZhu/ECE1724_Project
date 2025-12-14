@@ -1,0 +1,22 @@
+{
+  "id": 0,
+  "name": "main",
+  "messages": [
+    {
+      "from": "User",
+      "content": "hihihi"
+    },
+    {
+      "from": "Assistant",
+      "content": "Hello! It looks like you're feeling cheerful. How can I assist you today? 😊"
+    },
+    {
+      "from": "User",
+      "content": "hi"
+    },
+    {
+      "from": "Assistant",
+      "content": "Hello again! How can I help you today? 😊"
+    }
+  ]
+}

@@ -18,6 +18,76 @@ use regex::Regex;
 use serde_json::{json, Value};
 use crate::frontend::api_key::DASHSCOPE_API_KEY;
 
+// print help information
+pub fn show_help_message(app: &mut App) -> Result<()> {
+    let session_idx = app.active_idx;
+    let branch_idx = app.sessions[session_idx].active_branch;
+
+    // 1) Create an empty assistant message for streaming output
+    app.start_streaming_assistant(session_idx, branch_idx);
+
+    // 3) Clear the input box
+    app.input.clear();
+    app.input_scroll = 0; 
+
+    if let Some(tx_main) = app.backend_tx.clone() {
+        let tx_thread = tx_main.clone(); // clone for thread
+
+        thread::spawn(move || {
+            let tx_for_loop = tx_thread.clone();
+            let tx_for_done = tx_thread.clone();
+           
+            stream_help_message(session_idx, branch_idx, tx_for_loop);
+
+            // send final done event
+            let _ = tx_for_done.send(BackendEvent::AssistantDone {
+                session_idx,
+                branch_idx,
+            });
+            
+        });
+    }
+
+    Ok(())
+}
+
+pub fn stream_help_message(
+    session_idx: usize,
+    branch_idx: usize,
+    tx: Sender<BackendEvent>,
+) -> Result<(), Box<dyn std::error::Error>> {
+
+    let help_text = r#"
+📖 MyCLI Help
+
+NORMAL MODE
+  q          Quit
+  n          New session
+  j / k      Next / previous session
+  ↑ / ↓      Move session selection
+  [ / ]      Previous / next branch
+  TAB        Toggle new-session button
+  s          Toggle sidebar
+  e          Edit last user message
+  i          Enter insert mode
+
+INSERT MODE
+  Enter      Send message
+  Esc        Back to normal mode
+
+TIPS
+  • Editing a message forks a new branch
+
+"#;
+
+    // stream like LLM output
+    stream_string_into_ui(help_text, session_idx, branch_idx, &tx)?;
+
+    Ok(())
+}
+
+
+
 pub fn call_chat_api(
     client: &Client,
     model: &str,
