@@ -60,7 +60,7 @@ pub fn handle_key_event(code: KeyCode, app: &mut App) -> Result<bool> {
                 }
 
                 KeyCode::Char('h') => {
-                    actions::show_help_message(app);
+                    let _ = actions::show_help_message(app);
                 }
 
                 KeyCode::Char('e') => {

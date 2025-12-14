@@ -5,14 +5,10 @@ use std::sync::mpsc::Sender;
 
 use crate::app::{App, BackendEvent, Message, MessageFrom, EditContext, Branch};
 
-use reqwest::blocking::{Client, Response};
-use serde::Deserialize;
+use reqwest::blocking::{Client};
 use std::error::Error;
-use std::io::{BufRead, BufReader, Write};
 
 use std::fs;
-use std::fs::File;
-use std::path::Path;
 
 use regex::Regex;
 use serde_json::{json, Value};
@@ -37,7 +33,7 @@ pub fn show_help_message(app: &mut App) -> Result<()> {
             let tx_for_loop = tx_thread.clone();
             let tx_for_done = tx_thread.clone();
            
-            stream_help_message(session_idx, branch_idx, tx_for_loop);
+            let _ = stream_help_message(session_idx, branch_idx, tx_for_loop);
 
             // send final done event
             let _ = tx_for_done.send(BackendEvent::AssistantDone {

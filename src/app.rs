@@ -188,10 +188,6 @@ impl App {
         &self.sessions[self.active_idx]
     }
 
-    /// Get mutable reference to the active session.
-    pub fn active_session_mut(&mut self) -> &mut Session {
-        &mut self.sessions[self.active_idx]
-    }
 
     /// Move selection to the previous session (if any).
     pub fn prev_session(&mut self) {
@@ -217,25 +213,6 @@ impl App {
         self.list_state.select(Some(self.active_idx));
     }
 
-    /// Append a user message to the active session.
-    pub fn push_user_message(&mut self, content: String) {
-        let session = &mut self.sessions[self.active_idx];
-        let branch = &mut session.branches[session.active_branch];
-        branch.messages.push(Message {
-            from: MessageFrom::User,
-            content,
-        });
-    }
-
-    /// Append an assistant message to the active branch of the active session.
-    pub fn push_assistant_message(&mut self, content: String) {
-        let session = &mut self.sessions[self.active_idx];
-        let branch = &mut session.branches[session.active_branch];
-        branch.messages.push(Message {
-            from: MessageFrom::Assistant,
-            content,
-        });
-    }
  
     /// Append assistant chunk to branch message
     pub fn append_assistant_chunk(
@@ -328,13 +305,13 @@ impl App {
     /// Save current branch as a JSON file in /logs.
     pub fn save_to_logs(&mut self) -> Result<(), Box<dyn Error>> {
         // the saving address of history conversation 
-        let LOG_DIR: &str = "logs";
+        let log_dir: &str = "logs";
 
         let session = &mut self.sessions[self.active_idx];
         let branch = &mut session.branches[session.active_branch];
 
-        fs::create_dir_all(LOG_DIR)?;
-        let path = Path::new(LOG_DIR).join(format!("{}_{}.json", session.title, branch.name));
+        fs::create_dir_all(log_dir)?;
+        let path = Path::new(log_dir).join(format!("{}_{}.json", session.title, branch.name));
         let file = File::create(&path)?;
         serde_json::to_writer_pretty(file, branch)?;
         // println!("💾 Saved: {}", path.display());
@@ -360,16 +337,16 @@ impl App {
 
     /// Loads all sessions and branches from /logs.
     pub fn load_logs() -> Result<Vec<Session>, Box<dyn std::error::Error>> {
-        let LOG_DIR: &str = "logs";
+        let log_dir: &str = "logs";
         let mut sessions_map: std::collections::HashMap<String, Vec<Branch>> = std::collections::HashMap::new();
 
         // Make sure directory exists
-        if !Path::new(LOG_DIR).exists() {
+        if !Path::new(log_dir).exists() {
             return Ok(vec![]);
         }
 
         // Iterate all JSON files
-        for entry in fs::read_dir(LOG_DIR)? {
+        for entry in fs::read_dir(log_dir)? {
             let entry = entry?;
             let path = entry.path();
 
