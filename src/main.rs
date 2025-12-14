@@ -118,6 +118,8 @@ fn pop_out_terminal() -> Result<()> {
         r#"tell application "Terminal"
     activate
     do script "cd '{}'; export MYCLI_POPPED=1; '{}'"
+    set number of columns of front window to 120
+    set number of rows of front window to 40
 end tell"#,
         cwd.display(),
         exe.display()
