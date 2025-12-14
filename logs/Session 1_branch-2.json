@@ -33,22 +33,6 @@
     {
       "from": "Assistant",
       "content": "Ah, nice to know! You are Housen Zhu. 😊 You mentioned you don't like basketball, but that's just one part of who you are! What other things do you enjoy? Whether it's music, art, nature, or something else, I'm here to help you explore new hobbies or learn more about yourself. What's your favorite activity or interest? 🌟"
-    },
-    {
-      "from": "User",
-      "content": "hellohellohellohellohellohellohellohellohellohellohellohellohellohellohellohello"
-    },
-    {
-      "from": "Assistant",
-      "content": "Ah, nice to hear your greetings! 😊 You're Housen Zhu, and you've shared that you don't like basketball. If you'd like, I can help you explore new hobbies or learn more about yourself. How can I assist you today? 🌟"
-    },
-    {
-      "from": "User",
-      "content": "hellohellohellohellohellohellohellohellohellohellohellohellohellohellohellohellohellohellohellohellohellohellohellohellohellohellohellohellohellohellohellohellohellohellohellohellohellohellohellohello"
-    },
-    {
-      "from": "Assistant",
-      "content": "The string you provided is a repetition of the word **\"hello\"** 32 times. Here's the breakdown:\n\n- **Total characters**: Each \"hello\" is 5 characters long, so 32 repetitions = **160 characters**.\n- **Number of \"h\" letters**: Each \"hello\" has 1 \"h\", so 32 repetitions = **32 \"h\" letters**.\n\nIf you meant something specific (e.g., calculating the length, counting letters, or identifying a pattern), let me know! 😊"
     }
   ]
 }

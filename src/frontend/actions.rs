@@ -196,7 +196,9 @@ fn run_mcp_loop(
         When using a tool, use EXACTLY this XML-style syntax.\n\
         You can add some explaining information after a tool call, but take care of format for readability.\n\
         You can use **only one <use_tool> command per message.** If you need to use multiple tools, call them one by one — wait for the tool's result before issuing the next <use_tool>.\n\
-        When you are done, end your final output with 'Done.'\n"
+        You can use **only one <use_tool> command per message.** \n\
+        You can use **only one <use_tool> command per message.** "
+
     );
 
 
