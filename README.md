@@ -126,8 +126,8 @@ The system pipeline:
         - Active tools via MCP/ACP.
         - Error or status messages.
     - Support some keyboard shortcuts for session management
-        - /new to start a new session.
-        - /switch <id> to move between sessions.
+        - 'n' to start a new session.
+        - '↑/↓' to move between sessions.
     - Display the visual indicators for agentic workflow stages (Reasoning, Acting, Observing) in the loop.
     
     The TUI makes the CLI more than a simple REPL with structured displays and useful shortcuts for managing multi-step workflows. Users can interact with models seamlessly from visibility into the agent’s reasoning process.
@@ -296,3 +296,12 @@ Enjoy exploring the system!
 ---
 
 ## Lessons learned and concluding remarks
+Through this project, our team gained hands-on experience building a non-trivial Rust application that combines a terminal-based user interface with a stateful backend powered by a large language model. One of the most important lessons learned was the value of clear separation of concerns. Maintaining a clean boundary between UI rendering, input handling, session management, and backend LLM execution significantly improved the system’s maintainability and made incremental feature development more manageable.
+
+Designing a modal interaction model in a TUI environment highlighted the trade-offs between efficiency and usability. While keyboard-driven workflows enable fast interaction for experienced users, careful design and clear affordances were necessary to ensure the system remained approachable, especially when combined with optional mouse-based interaction. This reinforced the importance of aligning interface design with user expectations, even in terminal applications.
+
+The implementation of persistent sessions and branching conversations provided insight into how conversational systems can support exploratory workflows without sacrificing reproducibility or history integrity. In particular, the decision to fork a new branch when editing previous user messages proved effective in preserving original conversation context while enabling flexible experimentation.
+
+From a technical perspective, the project emphasized the importance of reproducibility and repository hygiene. Explicit build instructions, a clean repository structure, and proper exclusion of generated artifacts were essential to ensuring the project could be reliably built and evaluated across different environments.
+
+In conclusion, this project successfully met its original objectives and resulted in a functional, extensible LLM-powered CLI application. The lessons learned from this work—ranging from architectural design to user interaction considerations—will directly inform our approach to future systems programming and human-computer interaction projects.
