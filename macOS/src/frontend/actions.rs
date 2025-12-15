@@ -14,6 +14,11 @@ use regex::Regex;
 use serde_json::{json, Value};
 use crate::frontend::api_key::DASHSCOPE_API_KEY;
 
+use std::path::PathBuf;
+use std::env;
+
+
+
 // print help information
 pub fn show_help_message(app: &mut App) -> Result<()> {
     let session_idx = app.active_idx;
@@ -365,20 +370,23 @@ fn parse_tool_use(output: &str) -> Option<ToolCall> {
 fn execute_mcp(tool: &ToolCall) -> Result<String, Box<dyn Error>> {
     match tool.name.as_str() {
         "filesystem.read" => {
-            let path = tool.path.as_ref().ok_or("Missing path for filesystem.read")?;
-            let content = fs::read_to_string(path)?;
+            let raw_path = tool.path.as_ref().ok_or("Missing path for filesystem.read")?;
+            let path = expand_tilde(raw_path);
+            let content = fs::read_to_string(&path)?;
             // println!("📂 Read file '{}': {} bytes", path, content.len());
-            Ok(format!("Read file '{}' ({} bytes). Content:\n{}", path, content.len(), content))
+            Ok(format!("Read file '{}' ({} bytes). Content:\n{}", path.display(), content.len(), content))
         }
 
         "filesystem.write" => {
-            let path = tool.path.as_ref().ok_or("Missing path for filesystem.write")?;
+            let raw_path = tool.path.as_ref().ok_or("Missing path for filesystem.write")?;
+            let path = expand_tilde(raw_path);
+
             let data_raw = tool.content.as_ref().ok_or("Missing content for filesystem.write")?;
             let data = normalize_escaped_content(data_raw);
 
-            fs::write(path, &data)?;
+            fs::write(&path, &data)?;
             // println!("💾 Wrote {} bytes to '{}'", data.len(), path);
-            Ok(format!("Wrote {} bytes to '{}'.", data.len(), path))
+            Ok(format!("Wrote {} bytes to '{}'.", data.len(), path.display()))
         }
 
         "shell.run" => {
@@ -440,7 +448,14 @@ fn normalize_escaped_content(s: &str) -> String {
     out
 }
 
-
+fn expand_tilde(path: &str) -> PathBuf {
+    if let Some(stripped) = path.strip_prefix("~/") {
+        if let Ok(home) = env::var("HOME") {
+            return PathBuf::from(home).join(stripped);
+        }
+    }
+    PathBuf::from(path)
+}
 
 /// Create a new branch starting from the edit point,
 /// then send the edited user message on that new branch.
