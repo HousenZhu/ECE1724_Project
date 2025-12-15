@@ -174,7 +174,7 @@ The system pipeline:
 
 ## Contributions 
 
-| Task / Feature                          | Housen Zhu (MCP & Workflow) | Chufan Ju (Session & Integration) | Tianqi Ju (UI) |
+| Task / Feature                          | Housen Zhu (MCP & Workflow) | Chufan Ju (Context & backends) | Tianqi Ju (UI) |
 |-----------------------------------------|-----------------------------|-----------------------------------|----------------|
 | Set up local inference with Ollama      | ✅                   |                               |                             |
 | Set up local inference with Qwen3      |                        | ✅                          |                             |
