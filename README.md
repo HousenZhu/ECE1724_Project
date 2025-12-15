@@ -2,7 +2,7 @@
 
 | Name       | Student Number | Preferred Email              |
 |------------|----------------|------------------------------|
-| Housen Zhu | 1008117477     |                              |
+| Housen Zhu | 1008117477     | benjamin.zhu@mail.utoronto.ca|
 | Chufan Ju  | 1011668063     | ethan.ju@mail.utoronto.ca    |
 | Tianqi Ju  | 1012870467     | tianqi.ju@mail.utoronto.ca   |
 
