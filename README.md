@@ -170,33 +170,34 @@ The system pipeline:
 |          Displays conversation history, tool outputs, agent reasoning steps, and final responses.    |
 +------------------------------------------------------------------------------------------------------+
 ```
+---
 
+## Contributions 
 
-### Team Responsibilities  
-
-| Task / Feature                          | Housen Zhu (Inference) | Chufan Ju (Session & Workflow) | Tianqi Ju (UI & Integration) |
-|-----------------------------------------|----------------------|-------------------------------|-----------------------------|
-| Set up local inference with Ollama      | ✅                    |                               |                             |
-| implement Rust inference backends       | ✅                 |                               |                               |
+| Task / Feature                          | Housen Zhu (MCP & Workflow) | Chufan Ju (Session & Integration) | Tianqi Ju (UI) |
+|-----------------------------------------|-----------------------------|-----------------------------------|----------------|
+| Set up local inference with Ollama      | ✅                   |                               |                             |
+| Set up local inference with Qwen3      |                        | ✅                          |                             |
+| implement Rust inference backends       |                       | ✅                             |                               |
 | Implement inference API for CLI         | ✅                    |                               |                             |
-| Support streaming token-by-token output | ✅                    |                               |                             |
+| Support streaming token-by-token output |                     | ✅                              |                             |
 | Session context management              |                      | ✅                             |                             |
 | Save/restore sessions                   |                      | ✅                             |                             |
 | Branching task histories                |                      | ✅                             |                             |
-| Implement agentic workflow decomposition |                      | ✅                             |                             |
-| MCP protocol integration                |                      | ✅                             |                             |
-| ACP protocol integration                |                      | ✅                             |                             |
-| Tool discovery via MCP servers          |                      | ✅                             |                             |
-| Tool invocation & result handling       |                      | ✅                             |                             |
+| Implement agentic workflow decomposition | ✅                    |                              |                             |
+| MCP protocol integration                | ✅                     |                              |                             |
+| Tool discovery via MCP servers          | ✅                    |                              |                             |
+| Tool invocation & result handling       | ✅                     |                              |                             |
 | Build CLI with Ratatui                  |                      |                               | ✅                           |
 | Input/output panes (prompts & responses)|                      |                               | ✅                           |
 | Scrolling history & navigation          |                      |                               | ✅                           |
 | Display session state & tool results    |                      |                               | ✅                           |
 | Error handling & status messages        |                      |                               | ✅                           |
+| Editing messages to fork a branch        |                      |                               | ✅                           |
 | Keyboard shortcuts for context/session  |                      |                               | ✅                           |
-| System integration (all modules)        |                      |                               | ✅                           |
+| System integration (all modules)        | ✅                    |                               |                            |
 | Testing & debugging                     | ✅                    | ✅                             | ✅                           |
-| Documentation                           | ✅                    | ✅                             | ✅                           |
+| Documentation                           | ✅                    | ✅                             | ✅                           ||
 
 ---
     
