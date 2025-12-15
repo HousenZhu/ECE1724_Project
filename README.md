@@ -31,23 +31,7 @@ In addition, the project aims to support agentic workflows and external tool int
 
 The system pipeline:  
 
-```text
-+-----------------+        +-----------------+        +---------------------+        +------------------+
-| User Input (CLI)| -----> | Session Manager | -----> | Agent Workflow Layer| -----> | Inference Engine |
-+-----------------+        +-----------------+        +---------------------+        +------------------+
-        |                           |                          |                               |
-        |                           |                          |                               v
-        |                           |                          |                   +---------------------+
-        |                           |                          |                   |  External Tools     |
-        |                           |                          |                   | (MCP/ACP Servers)  |
-        |                           |                          |                   +---------------------+
-        |                           |                          |                               |
-        v                           v                          v                               v
-+------------------------------------------------------------------------------------------------------+
-|                                       Text User Interface (TUI)                                      |
-|          Displays conversation history, tool outputs, agent reasoning steps, and final responses.    |
-+------------------------------------------------------------------------------------------------------+
-```
+![img.png](overview.png)
 
 ---
 
