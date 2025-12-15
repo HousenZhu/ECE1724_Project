@@ -81,16 +81,14 @@ The system pipeline:
        - Use `std::process::Command` in a sandbox.
    - Support automation loops for multi-step tasks.
        - Example: "Fix bugs in `main.rs`" runs analysis, edits, and tests.
-       - Use `tokio::spawn` for async execution.
    - Visualize workflow steps in the TUI or console.
-   - Offer verbose mode (`--verbose`) to show raw LLM reasoning.
 
-    Agentic Workflow Execution can divide a task into smaller steps, call tools when needed, and repeat the process until the task is finished. In comparison, many Rust CLI tools can only work with single prompts and cannot manage complex workflows. Our system, based on ReAct, can automate tasks such as code refactoring. It runs locally, safely, and efficiently, and it uses Rust’s `tokio` for asynchronous execution.
+    Agentic Workflow Execution can divide a task into smaller steps, call tools when needed, and repeat the process until the task is finished. In comparison, many Rust CLI tools can only work with single prompts and cannot manage complex workflows. Our system, based on ReAct, can automate tasks such as code refactoring.
 
 3. **Tool Integration (MCP/ACP)**  
-   - Implement support for the Model Context Protocol (MCP) and Agent Client Protocol (ACP).  
+   - Implement support for the Model Context Protocol (MCP) 
        - MCP: Dynamically discover available tools exposed by MCP servers at runtime.
-       - ACP: Allow the CLI to interact with external editors (e.g., Cursor, Zed) for code editing, formatting, or build tasks.
+
    - Invoke external editors or services safely (e.g., code formatting, file editing, or data lookup).  
        - Execute tool calls as structured JSON requests.
        - Capture tool outputs and feed them back into the conversation loop.
