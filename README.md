@@ -101,12 +101,35 @@ The system pipeline:
 
 
 5. **Text User Interface (TUI)**  
-    - Structured terminal-based user interface with message view, input box, and sidebar  
-    - Modal interaction (Normal / Insert) inspired by editor-style workflows  
-    - Combined keyboard and mouse interaction for navigation and control  
-    - Persistent session management and branch-aware conversation navigation  
-    - Inline editing of recent user messages with automatic branch forking  
-    - Streaming LLM responses rendered directly in the terminal
+- Provide an interactive terminal-based user interface for the application.
+  - Display conversation messages, user input, and system feedback in a structured layout.
+  - Separate message view, input area, and optional sidebar for clarity.
+  - Maintain a clean and readable interface within standard terminal constraints.
+
+- Support modal interaction for efficient control.
+  - Use Normal mode for navigation, session control, and commands.
+  - Use Insert mode for typing and editing user prompts.
+  - Allow seamless switching between modes to support fast workflows.
+
+- Enable both keyboard and mouse-based interaction.
+  - Support keyboard shortcuts for navigation and common actions.
+  - Allow mouse clicks to select buttons, list items, and editable components.
+  - Provide equivalent functionality across input methods where applicable.
+
+- Integrate session and branch management into the UI.
+  - Visually indicate the active session and branch.
+  - Allow users to switch sessions and branches directly from the interface.
+  - Ensure UI state stays synchronized with session and branch changes.
+
+- Support inline message editing and interaction.
+  - Allow editing of the most recent user message directly from the UI.
+  - Automatically fork a new branch when submitting an edited message.
+  - Preserve original conversation history while enabling exploration.
+
+- Render model responses in real time.
+  - Stream generated responses into the message view as they arrive.
+  - Improve responsiveness during long generations.
+  - Provide immediate visual feedback for user actions.
 
 ---
 
@@ -114,7 +137,7 @@ The system pipeline:
 
 This section explains how to use the main features of the deliverable through the terminal user interface (TUI). The system supports both keyboard interaction and mouse-based clicking。
 
-### Launch and Basic Navigation
+### 1. Launch and Basic Navigation
 
 After launch, the screen is divided into:
 - Message area: shows conversation history (user + assistant).
@@ -124,7 +147,7 @@ After launch, the screen is divided into:
 
 ![alt text](screen.png)
 
-### Sidebar, Help, and Exit
+### 2. Sidebar, Help, and Exit
 - Toggle sidebar:
 	- Keyboard: s
 	- Mouse: click the sidebar toggle
@@ -134,7 +157,7 @@ After launch, the screen is divided into:
 	- Keyboard: q
 	- Mouse: close the terminal window (sessions remain saved)
 
-### Interaction Modes
+### 3. Interaction Modes
 
 The application operates in two modes:
 
@@ -154,7 +177,7 @@ Mode switching:
 - Press i → enter Insert mode
 - Press Esc → return to Normal mode
 
-### Creating and Navigating Sessions
+### 4. Creating and Navigating Sessions
 
 **Creating a New Session**  
 
@@ -169,7 +192,7 @@ A new session can be created by:
 
 The active session is highlighted in the UI.
 
-### Entering Prompts and Receiving Responses
+### 5. Entering Prompts and Receiving Responses
 1.	Focus the input box (via i or mouse click).
 2.	Type a prompt.
 3.	Submit the prompt by:
@@ -178,7 +201,7 @@ The active session is highlighted in the UI.
 
 Responses from the LLM are streamed and rendered in the message area.
 
-### Editing Previous Messages
+### 6. Editing Previous Messages
 
 To edit the most recent user message:
 - Keyboard: press e in Normal mode.
@@ -189,7 +212,7 @@ Editing behavior:
 - the application switches to Insert mode,
 - submitting the edited message forks a new branch to preserve history.
 
-### Branching Conversations
+### 7. Branching Conversations
 
 Each session may contain multiple branches. Use '[' and ']' key to switch between branches.
 
