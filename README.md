@@ -13,17 +13,21 @@ Large Language Models (LLMs) are increasingly being integrated into everyday dev
 
 While Python dominates the LLM tooling, it comes with some trade-offs (runtime overhead and limited guarantees of safety and concurrency). In contrast, Rust provides strong memory safety and predictable performance. However, despite these strengths, the Rust ecosystem for LLM-powered applications like a CLI remains underdeveloped in some areas.
 
-Protocols such as the Model Context Protocol (MCP) and the Agent Client Protocol (ACP) enable LLMs to invoke external tools safely and effectively), where robust Rust integrations remain scarce. Also, CLI-based projects in Rust only offer prompt-based functionality and rarely go beyond simple REPLs (Read–Eval–Print Loop). 
+Protocols such as the Model Context Protocol (MCP) enables LLMs to invoke external tools safely and effectively), where robust Rust integrations remain scarce. Also, CLI-based projects in Rust only offer prompt-based functionality and rarely go beyond simple REPLs (Read–Eval–Print Loop). 
 
 By addressing these gaps, we aim to create a LLM-powered CLI that supports agentic workflows, protocol integration and context-aware sessions in Rust, enabling developers to automate tasks by using LLMs directly in their terminal without leaving their workflow. By serving with local model inference, it increases privacy and control, reduces dependence on cloud APIs or external services.
 
 ---
 
-## Objective and Key Features  
+## Objective
 
-The objective of this project is to design and implement a simple, Rust-based command-line interface (CLI) powered by large language models (LLMs). The tool will enable users to interact with models locally through a text user interface, while supporting context-aware sessions, agentic workflows, and integration with external tools. The aim is to create a lightweight but extensible system that improves developer productivity directly from the terminal.  
+The objective of this project is to design and implement a simple, Rust-based command-line interface (CLI) powered by large language models (LLMs). The system allows users to interact with language models through a text-based user interface, providing real-time streaming responses and maintaining context across multiple interactions. By organizing conversations into sessions and branches, the CLI enables structured, context-aware dialogue and flexible exploration of different interaction paths.
 
-### Key Features  
+In addition, the project aims to support agentic workflows and external tool integration through a lightweight protocol, enabling the model to perform tasks such as file operations and shell command execution when appropriate. The overall goal is to create a lightweight, efficient, and extensible terminal-based assistant that enhances developer productivity while remaining easy to use and adaptable to future extensions.
+
+---
+
+## Features  
 
 1. **Session Management**  
     - Maintain conversational history across multiple turns using a local database.
