@@ -66,6 +66,7 @@ The system pipeline:
         - Editing a message creates a new branch starting from that point.
     - Persist conversation logs locally for inspection and reproducibility.
         - Serialize session branches into JSON files using `serde`.    
+
     Session Management allows users to maintain structured and long-running conversations rather than isolated prompts. By organizing interactions into sessions and branches, users can revisit earlier inputs, explore alternative reasoning paths, and work on multiple tasks in parallel. Compared to simple Rust-based LLM CLIs, this design provides stronger context awareness and greater flexibility for complex workflows.
 
 2. **Agentic Workflow Execution**  
@@ -111,6 +112,7 @@ The system pipeline:
    - Integrate API-based inference smoothly with session management.
        - Include session context and message history in each API request.
        - Ensure responses remain consistent with the active session.
+   
    Online model inference allows the system to leverage powerful language models without requiring local model deployment. By using API-based inference, the CLI remains lightweight and easy to set up, while still supporting context-aware conversations and agentic workflows. Compared to local-only inference, this approach simplifies deployment and improves model availability at the cost of relying on external services.
 
 
