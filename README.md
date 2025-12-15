@@ -8,11 +8,14 @@
 
 ---
 
-## Videos
-
-- **Video Demo:** A demonstration of the system is available on YouTube:  https://youtu.be/sQuFDGCbiKM
+## Video Slide Presentation
 
 - **Video Slide Presentation:** A recorded slide presentation explaining the project design and features: https://youtu.be/9JQ1ElIxZUE
+
+---
+## Video Demo
+
+- **Video Demo:** A demonstration of the system is available on YouTube:  https://youtu.be/sQuFDGCbiKM
 
 ---
 ## Motivation
