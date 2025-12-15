@@ -200,15 +200,5 @@ The system pipeline:
 | Documentation                           | ✅                    | ✅                             | ✅                           ||
 
 ---
-    
-### Member Descriptions
 
-#### Housen Zhu (Inference):
-Housen Zhu will manage local model inference setup with Ollama and explore Rust-based inference backends in first 3 weeks. He will implement inference API for CLI and facilitate streaming output in following 3 weeks. In the final 2 weeks, He will help with system testing and documentation.
-    
-#### Chufan Ju (Session & Workflow):
-Chufan Ju will work on building the session management and agent workflow components. These parts will allow the system to keep conversation history and also perform tasks in automatic way. The expected workload is about 550 lines of code during 3 weeks. With these functions, our CLI becomes more advanced and unique in the Rust ecosystem, which can improve the productivity of developers.
-    
-#### Tianqi Ju (UI & Integration):
-Tianqi Ju will build the text user interface using Ratatui, including input/output panes, scrolling history, navigation, and displaying session state and tool results. She’ll also connect the tool system through MCP/ACP, handle errors, and add handy keyboard shortcuts for managing sessions. When everything’s ready, she’ll help bring all the modules together, test the whole system, and make sure the documentation is clear and complete.
 
