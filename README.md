@@ -27,6 +27,30 @@ In addition, the project aims to support agentic workflows and external tool int
 
 ---
 
+## System Overview  
+
+The system pipeline:  
+
+```text
++-----------------+        +-----------------+        +---------------------+        +------------------+
+| User Input (CLI)| -----> | Session Manager | -----> | Agent Workflow Layer| -----> | Inference Engine |
++-----------------+        +-----------------+        +---------------------+        +------------------+
+        |                           |                          |                               |
+        |                           |                          |                               v
+        |                           |                          |                   +---------------------+
+        |                           |                          |                   |  External Tools     |
+        |                           |                          |                   | (MCP/ACP Servers)  |
+        |                           |                          |                   +---------------------+
+        |                           |                          |                               |
+        v                           v                          v                               v
++------------------------------------------------------------------------------------------------------+
+|                                       Text User Interface (TUI)                                      |
+|          Displays conversation history, tool outputs, agent reasoning steps, and final responses.    |
++------------------------------------------------------------------------------------------------------+
+```
+
+---
+
 ## Features  
 
 1. **Session Management**  
@@ -144,70 +168,35 @@ Enjoy exploring the system!
 
 
 
-
 ---
 
-## Tentative Plan  
+## Contributions 
 
-### System Overview  
-
-The system pipeline:  
-
-```text
-+-----------------+        +-----------------+        +---------------------+        +------------------+
-| User Input (CLI)| -----> | Session Manager | -----> | Agent Workflow Layer| -----> | Inference Engine |
-+-----------------+        +-----------------+        +---------------------+        +------------------+
-        |                           |                          |                               |
-        |                           |                          |                               v
-        |                           |                          |                   +---------------------+
-        |                           |                          |                   |  External Tools     |
-        |                           |                          |                   | (MCP/ACP Servers)  |
-        |                           |                          |                   +---------------------+
-        |                           |                          |                               |
-        v                           v                          v                               v
-+------------------------------------------------------------------------------------------------------+
-|                                       Text User Interface (TUI)                                      |
-|          Displays conversation history, tool outputs, agent reasoning steps, and final responses.    |
-+------------------------------------------------------------------------------------------------------+
-```
-
-
-### Team Responsibilities  
-
-| Task / Feature                          | Housen Zhu (Inference) | Chufan Ju (Session & Workflow) | Tianqi Ju (UI & Integration) |
-|-----------------------------------------|----------------------|-------------------------------|-----------------------------|
-| Set up local inference with Ollama      | ✅                    |                               |                             |
-| implement Rust inference backends       | ✅                 |                               |                               |
+| Task / Feature                          | Housen Zhu (MCP & Workflow) | Chufan Ju (Context & backends) | Tianqi Ju (UI) |
+|-----------------------------------------|-----------------------------|-----------------------------------|----------------|
+| Set up local inference with Ollama      | ✅                   |                               |                             |
+| Set up local inference with Qwen3      |                        | ✅                          |                             |
+| implement Rust inference backends       |                       | ✅                             |                               |
 | Implement inference API for CLI         | ✅                    |                               |                             |
-| Support streaming token-by-token output | ✅                    |                               |                             |
+| Support streaming token-by-token output |                     | ✅                              |                             |
 | Session context management              |                      | ✅                             |                             |
 | Save/restore sessions                   |                      | ✅                             |                             |
 | Branching task histories                |                      | ✅                             |                             |
-| Implement agentic workflow decomposition |                      | ✅                             |                             |
-| MCP protocol integration                |                      | ✅                             |                             |
-| ACP protocol integration                |                      | ✅                             |                             |
-| Tool discovery via MCP servers          |                      | ✅                             |                             |
-| Tool invocation & result handling       |                      | ✅                             |                             |
+| Implement agentic workflow decomposition | ✅                    |                              |                             |
+| MCP protocol integration                | ✅                     |                              |                             |
+| Tool discovery via MCP servers          | ✅                    |                              |                             |
+| Tool invocation & result handling       | ✅                     |                              |                             |
 | Build CLI with Ratatui                  |                      |                               | ✅                           |
 | Input/output panes (prompts & responses)|                      |                               | ✅                           |
 | Scrolling history & navigation          |                      |                               | ✅                           |
 | Display session state & tool results    |                      |                               | ✅                           |
 | Error handling & status messages        |                      |                               | ✅                           |
+| Editing messages to fork a branch        |                      |                               | ✅                           |
 | Keyboard shortcuts for context/session  |                      |                               | ✅                           |
-| System integration (all modules)        |                      |                               | ✅                           |
+| System integration (all modules)        | ✅                    |                               |                            |
 | Testing & debugging                     | ✅                    | ✅                             | ✅                           |
-| Documentation                           | ✅                    | ✅                             | ✅                           |
+| Documentation                           | ✅                    | ✅                             | ✅                           ||
 
 ---
-    
-### Member Descriptions
 
-#### Housen Zhu (Inference):
-Housen Zhu will manage local model inference setup with Ollama and explore Rust-based inference backends in first 3 weeks. He will implement inference API for CLI and facilitate streaming output in following 3 weeks. In the final 2 weeks, He will help with system testing and documentation.
-    
-#### Chufan Ju (Session & Workflow):
-Chufan Ju will work on building the session management and agent workflow components. These parts will allow the system to keep conversation history and also perform tasks in automatic way. The expected workload is about 550 lines of code during 3 weeks. With these functions, our CLI becomes more advanced and unique in the Rust ecosystem, which can improve the productivity of developers.
-    
-#### Tianqi Ju (UI & Integration):
-Tianqi Ju will build the text user interface using Ratatui, including input/output panes, scrolling history, navigation, and displaying session state and tool results. She’ll also connect the tool system through MCP/ACP, handle errors, and add handy keyboard shortcuts for managing sessions. When everything’s ready, she’ll help bring all the modules together, test the whole system, and make sure the documentation is clear and complete.
 
