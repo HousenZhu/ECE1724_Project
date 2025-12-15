@@ -2,6 +2,7 @@
 
 This section describes how users interact with the CLI through built-in commands to manage models, sessions, and branches.
 
+![img.png](img.png)
 ---
 
 ## Model Management
