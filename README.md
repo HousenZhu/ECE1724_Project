@@ -1,10 +1,10 @@
 # ECE1724 Project Proposal: Simple LLM-Powered CLI
 
-Housen Zhu 1008117477
-
-Chufan Ju 1011668063
-
-Tianqi Ju 1012870467
+| Name       | Student Number | Preferred Email              |
+|------------|----------------|------------------------------|
+| Housen Zhu | 1008117477     |                              |
+| Chufan Ju  | 1011668063     |                              |
+| Tianqi Ju  | 1012870467     | tianqi.ju@mail.utoronto.ca   |
 
 ---
 
@@ -132,6 +132,93 @@ The system pipeline:
     The TUI makes the CLI more than a simple REPL with structured displays and useful shortcuts for managing multi-step workflows. Users can interact with models seamlessly from visibility into the agent’s reasoning process.
 
 ---
+
+## User guide
+
+This section explains how to use the main features of the deliverable through the terminal user interface (TUI). The system supports both keyboard interaction and mouse-based clicking。
+
+### Launch and Basic Navigation
+
+After launch, the screen is divided into:
+- Message area: shows conversation history (user + assistant).
+- Input area: where prompts are typed (in insert mode).
+- Sidebar (if enabled): session list and metadata.
+- interactive UI elements (e.g., buttons): can be activated via keyboard or mouse click.
+
+![alt text](image.png)
+
+### Sidebar, Help, and Exit
+- Toggle sidebar:
+	- Keyboard: s
+	- Mouse: click the sidebar toggle
+- Show help:
+	- Keyboard: h
+- Exit application:
+	- Keyboard: q
+	- Mouse: close the terminal window (sessions remain saved)
+
+### Interaction Modes
+
+The application operates in two modes:
+
+**Normal Mode**  
+Normal mode is used for navigation and control. In this mode, users can:
+- switch sessions and branches,
+- activate UI controls (via keyboard or mouse),
+- toggle sidebar and help views,
+- initiate message editing.
+
+The application starts in Normal mode.
+
+**Insert Mode**  
+Insert mode is used for typing or editing prompt text in the input box.
+
+Mode switching:
+- Press i → enter Insert mode
+- Press Esc → return to Normal mode
+
+### Creating and Navigating Sessions
+
+**Creating a New Session**  
+
+A new session can be created by:
+- pressing n in Normal mode,
+- selecting the New Session button using Tab + Enter,
+- clicking the New Session button with the mouse.
+
+**Navigating Sessions**
+- Keyboard: j / k or arrow keys('↑↓').
+- Mouse: click on a session entry in the session list.
+
+The active session is highlighted in the UI.
+
+### Entering Prompts and Receiving Responses
+1.	Focus the input box (via i or mouse click).
+2.	Type a prompt.
+3.	Submit the prompt by:
+	- pressing Enter, or
+	- clicking "send" button.
+
+Responses from the LLM are streamed and rendered in the message area.
+
+### Editing Previous Messages
+
+To edit the most recent user message:
+- Keyboard: press e in Normal mode.
+- Mouse: click the Edit control displayed under the message.
+
+Editing behavior:
+- the message content is loaded into the input box,
+- the application switches to Insert mode,
+- submitting the edited message forks a new branch to preserve history.
+
+### Branching Conversations
+
+Each session may contain multiple branches. Use '[' and ']' key to switch between branches.
+
+The message view updates immediately when the active branch changes.
+
+-----
 
 ## Reproducibility Guide 
 
