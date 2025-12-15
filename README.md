@@ -30,19 +30,20 @@ In addition, the project aims to support agentic workflows and external tool int
 ## Features  
 
 1. **Session Management**  
-    - Maintain conversational history across multiple turns using a local database.
-        - Save user prompts, LLM answers, and also metadata such as timestamps.
-    - Support saving and loading sessions to continue work later.
-        - Serialize sessions to JSON with `serde` for cross-platform compatibility.
-        - Commands: `/save <session_id>` and `/load <session_id>` using Clap for parsing.
-    - Allow branching task histories to switch between project contexts.
-        - Implement a tree-like structure with `HashMap<String`, `Vec<Message>>`.
-        - Command: `/branch <name>` to fork a session (e.g., debugging vs. testing).
-    - Prevent token overflow by summarizing long histories automatically.
-        - Use LLM to generate summaries (prompt: "Summarize this session").
-    - Track session metadata (e.g., tags, creation time) for easy querying.
-    
-    Session Management allows users to keep the conversation even after they close the terminal, which makes it easier for them to continue from the point they stopped. In contrast, simple Rust CLI tools like `llm-rs` do not provide persistent context. This  is especially useful for developers who often change between different tasks.
+    - Maintain conversational history across multiple turns within a session.
+        - Store user inputs and assistant responses in an ordered message list.
+    - Organize conversations into multiple independent sessions.
+        - Each session maintains its own isolated context.
+        - Users can switch between sessions without losing progress.
+    - Support branching conversation histories within a session.
+        - Each session can contain multiple branches representing different interaction paths.
+        - Branches are isolated and do not interfere with each other.
+    - Allow users to fork a new branch by editing a previous user message.
+        - Editing a message creates a new branch starting from that point.
+    - Persist conversation logs locally for inspection and reproducibility.
+        - Serialize session branches into JSON files using `serde`.    
+
+   Session Management allows users to maintain structured and long-running conversations rather than isolated prompts. By organizing interactions into sessions and branches, users can revisit earlier inputs, explore alternative reasoning paths, and work on multiple tasks in parallel. Compared to simple Rust-based LLM CLIs, this design provides stronger context awareness and greater flexibility for complex workflows.
 
 2. **Agentic Workflow Execution**  
    - Decompose complex user instructions into subtasks.
