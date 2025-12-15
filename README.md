@@ -101,20 +101,12 @@ The system pipeline:
 
 
 5. **Text User Interface (TUI)**  
- 
-   - Support scrolling through conversation history, so users can navigate long sessions.
-    - Support command navigation to browse history (e.g., keyboard shortcuts:↑/↓).
-    - Support copy/paste the outputs and commands.
-    - Display important information in a sidebar.
-        - Current session ID.
-        - Active tools via MCP/ACP.
-        - Error or status messages.
-    - Support some keyboard shortcuts for session management
-        - 'n' to start a new session.
-        - '↑/↓' to move between sessions.
-    - Display the visual indicators for agentic workflow stages (Reasoning, Acting, Observing) in the loop.
-    
-    The TUI makes the CLI more than a simple REPL with structured displays and useful shortcuts for managing multi-step workflows. Users can interact with models seamlessly from visibility into the agent’s reasoning process.
+    - Structured terminal-based user interface with message view, input box, and sidebar  
+    - Modal interaction (Normal / Insert) inspired by editor-style workflows  
+    - Combined keyboard and mouse interaction for navigation and control  
+    - Persistent session management and branch-aware conversation navigation  
+    - Inline editing of recent user messages with automatic branch forking  
+    - Streaming LLM responses rendered directly in the terminal
 
 ---
 
