@@ -3,7 +3,7 @@
 | Name       | Student Number | Preferred Email              |
 |------------|----------------|------------------------------|
 | Housen Zhu | 1008117477     |                              |
-| Chufan Ju  | 1011668063     |                              |
+| Chufan Ju  | 1011668063     | ethan.ju@mail.utoronto.ca    |
 | Tianqi Ju  | 1012870467     | tianqi.ju@mail.utoronto.ca   |
 
 ---
@@ -66,8 +66,7 @@ The system pipeline:
         - Editing a message creates a new branch starting from that point.
     - Persist conversation logs locally for inspection and reproducibility.
         - Serialize session branches into JSON files using `serde`.    
-
-   Session Management allows users to maintain structured and long-running conversations rather than isolated prompts. By organizing interactions into sessions and branches, users can revisit earlier inputs, explore alternative reasoning paths, and work on multiple tasks in parallel. Compared to simple Rust-based LLM CLIs, this design provides stronger context awareness and greater flexibility for complex workflows.
+    Session Management allows users to maintain structured and long-running conversations rather than isolated prompts. By organizing interactions into sessions and branches, users can revisit earlier inputs, explore alternative reasoning paths, and work on multiple tasks in parallel. Compared to simple Rust-based LLM CLIs, this design provides stronger context awareness and greater flexibility for complex workflows.
 
 2. **Agentic Workflow Execution**  
    - Decompose complex user instructions into subtasks.
@@ -101,16 +100,18 @@ The system pipeline:
 
     Tool Integration ensures the CLI is not just a simple chat interface, but a flexible automation hub. Unlike typical Rust LLM CLIs that only handle prompts, our system bridges LLM reasoning with external developer tools and editors, enabling richer agentic workflows.
 
-4. **Local Model Inference**  
-   - Enable offline usage and lightweight CPU usage by implementing inference backends in Rust.
-        - support GPU acceleration if achievable.
-    - Support streaming (token-by-token) response display, while ensuring low latency.
-    - allow users to select different models at runtime (e.g., model llama2) depending on task requirements.
-    - Implement error handling if a model is unavailable or fails to interact.
-    - Ensure inference API works well for the agentic workflow and session manager to interact with models consistently.
-    - Record the inference performance statistics (e.g., tokens per second) for debugging and optimization.
-    
-     Local Model Inference allows users to run the LLM-powered CLI offline and keep the data in privacy. Because of Rust’s high performance and strong safety guarantees, the implementation could prioritize running speed while ensuring stability. Users would be flexible to choose appropriate models that fit their personal tasks.
+4. **Online Model Inference**
+   - Enable model inference through online LLM APIs.
+       - Send user prompts and conversation context to remote model endpoints.
+       - Receive generated responses from the API.
+   - Support real-time streaming of model responses.
+       - Improve responsiveness and user experience during long generations.
+   - Allow flexible model selection through API configuration.
+       - Specify different models depending on task requirements.
+   - Integrate API-based inference smoothly with session management.
+       - Include session context and message history in each API request.
+       - Ensure responses remain consistent with the active session.
+   Online model inference allows the system to leverage powerful language models without requiring local model deployment. By using API-based inference, the CLI remains lightweight and easy to set up, while still supporting context-aware conversations and agentic workflows. Compared to local-only inference, this approach simplifies deployment and improves model availability at the cost of relying on external services.
 
 
 5. **Text User Interface (TUI)**  
@@ -225,6 +226,14 @@ In order to use our CLI, first clone the project repository from GitHub:
 git clone https://github.com/HousenZhu/ECE1724_Project.git
 cd ECE1724_Project
 ```
+
+This project uses the Qwen model through the DashScope API for online inference.
+For simplicity, the API key is currently defined directly in `api_key.rs`:
+
+```bash
+pub const DASHSCOPE_API_KEY: &str = "your_api_key_here";
+```
+In a production setting, the API key should be managed using environment variables or a secure configuration method.
 
 Next, choose the appropriate environment directory based on your operating system:
 
