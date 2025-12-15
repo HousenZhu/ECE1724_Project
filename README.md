@@ -7,7 +7,11 @@
 | Tianqi Ju  | 1012870467     | tianqi.ju@mail.utoronto.ca   |
 
 ---
+## Video Demo
 
+A demonstration video of the project is available on YouTube: https://youtu.be/sQuFDGCbiKM
+
+---
 ## Motivation
 Large Language Models (LLMs) are increasingly being integrated into everyday developer workflows including code generation and debugging. Also, LLMs can operate as agents on managing multi-step workflows and interacting with external tools. As one of the most widely used environments, Command-line interfaces (CLIs) are especially suitable for such integration for developers and other technical users valuing its speed and flexibility. A CLI powered by LLMs enables developers to interact with local model inference in their existing workflows with low latency.
 
@@ -243,6 +247,8 @@ Next, choose the appropriate environment directory based on your operating syste
 ```bash
 cd Windows
 ```
+For Windows-specific instructions, please refer to the README in the `Windows` directory: [Windows README](Windows/README.md)
+
 On Windows, the project supports interaction with the language model through the terminal interface. The text-based user interface (TUI) is not available.
 
 * macOS:
@@ -267,30 +273,29 @@ Enjoy exploring the system!
 
 ## Contributions 
 
-| Task / Feature                          | Housen Zhu (MCP & Workflow) | Chufan Ju (Context & backends) | Tianqi Ju (UI) |
-|-----------------------------------------|-----------------------------|-----------------------------------|----------------|
-| Set up local inference with Ollama      | ✅                   |                               |                             |
-| Set up local inference with Qwen3      |                        | ✅                          |                             |
-| implement Rust inference backends       |                       | ✅                             |                               |
-| Implement inference API for CLI         | ✅                    |                               |                             |
+| Task / Feature                         | Housen Zhu (MCP & Workflow) | Chufan Ju (Context & backends) | Tianqi Ju (UI) |
+|----------------------------------------|-----------------------------|-----------------------------------|----------------|
+| Set up inference with Qwen3            |                        | ✅                          |                             |
+| implement Rust inference backends      |                       | ✅                             |                               |
+| Implement inference API for CLI        | ✅                    |                               |                             |
 | Support streaming token-by-token output |                     | ✅                              |                             |
-| Session context management              |                      | ✅                             |                             |
-| Save/restore sessions                   |                      | ✅                             |                             |
-| Branching task histories                |                      | ✅                             |                             |
+| Session context management             |                      | ✅                             |                             |
+| Save/restore sessions                  |                      | ✅                             |                             |
+| Branching task histories               |                      | ✅                             |                             |
 | Implement agentic workflow decomposition | ✅                    |                              |                             |
-| MCP protocol integration                | ✅                     |                              |                             |
-| Tool discovery via MCP servers          | ✅                    |                              |                             |
-| Tool invocation & result handling       | ✅                     |                              |                             |
-| Build CLI with Ratatui                  |                      |                               | ✅                           |
-| Input/output panes (prompts & responses)|                      |                               | ✅                           |
-| Scrolling history & navigation          |                      |                               | ✅                           |
-| Display session state & tool results    |                      |                               | ✅                           |
-| Error handling & status messages        |                      |                               | ✅                           |
-| Editing messages to fork a branch        |                      |                               | ✅                           |
-| Keyboard shortcuts for context/session  |                      |                               | ✅                           |
-| System integration (all modules)        | ✅                    |                               |                            |
-| Testing & debugging                     | ✅                    | ✅                             | ✅                           |
-| Documentation                           | ✅                    | ✅                             | ✅                           ||
+| MCP protocol integration               | ✅                     |                              |                             |
+| Tool discovery via MCP servers         | ✅                    |                              |                             |
+| Tool invocation & result handling      | ✅                     |                              |                             |
+| Build CLI with Ratatui                 |                      |                               | ✅                           |
+| Input/output panes (prompts & responses) |                      |                               | ✅                           |
+| Scrolling history & navigation         |                      |                               | ✅                           |
+| Display session state & tool results   |                      |                               | ✅                           |
+| Error handling & status messages       |                      |                               | ✅                           |
+| Editing messages to fork a branch      |                      |                               | ✅                           |
+| Keyboard shortcuts for context/session |                      |                               | ✅                           |
+| System integration (all modules)       | ✅                    |                               |                            |
+| Testing & debugging                    | ✅                    | ✅                             | ✅                           |
+| Documentation                          | ✅                    | ✅                             | ✅                           ||
 
 ---
 
