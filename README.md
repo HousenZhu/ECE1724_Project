@@ -29,6 +29,28 @@ In addition, the project aims to support agentic workflows and external tool int
 
 ## Features  
 
+### System Overview  
+
+The system pipeline:  
+
+```text
++-----------------+        +-----------------+        +---------------------+        +------------------+
+| User Input (CLI)| -----> | Session Manager | -----> | Agent Workflow Layer| -----> | Inference Engine |
++-----------------+        +-----------------+        +---------------------+        +------------------+
+        |                           |                          |                               |
+        |                           |                          |                               v
+        |                           |                          |                   +---------------------+
+        |                           |                          |                   |  External Tools     |
+        |                           |                          |                   | (MCP/ACP Servers)  |
+        |                           |                          |                   +---------------------+
+        |                           |                          |                               |
+        v                           v                          v                               v
++------------------------------------------------------------------------------------------------------+
+|                                       Text User Interface (TUI)                                      |
+|          Displays conversation history, tool outputs, agent reasoning steps, and final responses.    |
++------------------------------------------------------------------------------------------------------+
+```
+
 1. **Session Management**  
     - Maintain conversational history across multiple turns within a session.
         - Store user inputs and assistant responses in an ordered message list.
@@ -144,32 +166,6 @@ Enjoy exploring the system!
 
 
 
-
----
-
-## Tentative Plan  
-
-### System Overview  
-
-The system pipeline:  
-
-```text
-+-----------------+        +-----------------+        +---------------------+        +------------------+
-| User Input (CLI)| -----> | Session Manager | -----> | Agent Workflow Layer| -----> | Inference Engine |
-+-----------------+        +-----------------+        +---------------------+        +------------------+
-        |                           |                          |                               |
-        |                           |                          |                               v
-        |                           |                          |                   +---------------------+
-        |                           |                          |                   |  External Tools     |
-        |                           |                          |                   | (MCP/ACP Servers)  |
-        |                           |                          |                   +---------------------+
-        |                           |                          |                               |
-        v                           v                          v                               v
-+------------------------------------------------------------------------------------------------------+
-|                                       Text User Interface (TUI)                                      |
-|          Displays conversation history, tool outputs, agent reasoning steps, and final responses.    |
-+------------------------------------------------------------------------------------------------------+
-```
 ---
 
 ## Contributions 
