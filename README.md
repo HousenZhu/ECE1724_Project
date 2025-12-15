@@ -1,14 +1,14 @@
 # ECE1724 Project Proposal: Simple LLM-Powered CLI
 
-Housen Zhu 1008117477
-
-Chufan Ju 1011668063
-
-Tianqi Ju 1012870467
+| Name       | Student Number | Preferred Email              |
+|------------|----------------|------------------------------|
+| Housen Zhu | 1008117477     |                              |
+| Chufan Ju  | 1011668063     |                              |
+| Tianqi Ju  | 1012870467     | tianqi.ju@mail.utoronto.ca   |
 
 ---
 
-## Motivation
+## 1. Motivation
 Large Language Models (LLMs) are increasingly being integrated into everyday developer workflows including code generation and debugging. Also, LLMs can operate as agents on managing multi-step workflows and interacting with external tools. As one of the most widely used environments, Command-line interfaces (CLIs) are especially suitable for such integration for developers and other technical users valuing its speed and flexibility. A CLI powered by LLMs enables developers to interact with local model inference in their existing workflows with low latency.
 
 While Python dominates the LLM tooling, it comes with some trade-offs (runtime overhead and limited guarantees of safety and concurrency). In contrast, Rust provides strong memory safety and predictable performance. However, despite these strengths, the Rust ecosystem for LLM-powered applications like a CLI remains underdeveloped in some areas.
@@ -19,11 +19,11 @@ By addressing these gaps, we aim to create a LLM-powered CLI that supports agent
 
 ---
 
-## Objective and Key Features  
+## 2. Objective and Key Features  
 
 The objective of this project is to design and implement a simple, Rust-based command-line interface (CLI) powered by large language models (LLMs). The tool will enable users to interact with models locally through a text user interface, while supporting context-aware sessions, agentic workflows, and integration with external tools. The aim is to create a lightweight but extensible system that improves developer productivity directly from the terminal.  
 
-### Key Features  
+### 2.1 Key Features  
 
 1. **Session Management**  
     - Maintain conversational history across multiple turns using a local database.
@@ -105,7 +105,112 @@ The objective of this project is to design and implement a simple, Rust-based co
 
 ---
 
-## Tentative Plan  
+## 3. User Guide 
+
+This section explains how to use the main features of the deliverable through the terminal user interface (TUI). The system supports both keyboard interaction and mouse-based clicking。
+
+### 3.1 Launch and Basic Navigation
+
+1.	Start the program from the repository root:
+    
+    ```bash
+    cargo run
+    ```
+
+2.	After launch, the screen is divided into:
+    - Message area: shows conversation history (user + assistant).
+	- Input area: where prompts are typed (in insert mode).
+	- Sidebar (if enabled): session list and metadata.
+    - interactive UI elements (e.g., buttons): can be activated via keyboard or mouse click.
+
+### 3.2 Interaction Model
+
+The interface follows a modal design inspired by terminal editors, but it is not keyboard-only.
+- Keyboard input is recommended for fast navigation and editing.
+- Mouse clicks can be used to:
+	- select UI elements such as buttons or list items,
+	- focus the input box,
+	- trigger actions equivalent to pressing Enter on the selected element.
+
+### 3.3 Interaction Modes
+
+The application operates in two modes:
+
+**Normal Mode**  
+Normal mode is used for navigation and control. In this mode, users can:
+- switch sessions and branches,
+- activate UI controls (via keyboard or mouse),
+- toggle sidebar and help views,
+- initiate message editing.
+
+The application starts in Normal mode.
+
+**Insert Mode**  
+Insert mode is used for typing or editing prompt text in the input box.
+
+Mode switching:
+- Press i → enter Insert mode
+- Press Esc → return to Normal mode
+
+### 3.4 Creating and Navigating Sessions
+
+**Creating a New Session**  
+
+A new session can be created by:
+- pressing n in Normal mode,
+- selecting the New Session button using Tab + Enter,
+- clicking the New Session button with the mouse.
+
+**Navigating Sessions**
+- Keyboard: j / k or arrow keys.
+- Mouse: click on a session entry in the session list.
+
+The active session is highlighted in the UI.
+
+### 3.5 Entering Prompts and Receiving Responses
+1.	Focus the input box (via i or mouse click).
+2.	Type a prompt.
+3.	Submit the prompt by:
+	- pressing Enter, or
+	- clicking "send" button.
+
+Responses from the LLM are streamed and rendered in the message area.
+
+### 3.6 Persistent Sessions
+
+All sessions are automatically saved after each interaction. Restarting the application preserves all previously created sessions.
+
+
+### 3.7 Branching Conversations
+
+Each session may contain multiple branches. Use '[' and ']' key to switch between branches.
+
+The message view updates immediately when the active branch changes.
+
+### 3.8 Editing Previous Messages
+
+To edit the most recent user message:
+- Keyboard: press e in Normal mode.
+- Mouse: click the Edit control displayed under the message.
+
+Editing behavior:
+- the message content is loaded into the input box,
+- the application switches to Insert mode,
+- submitting the edited message forks a new branch to preserve history.
+
+### 3.9 Sidebar, Help, and Exit
+- Toggle sidebar:
+	- Keyboard: s
+	- Mouse: click the sidebar toggle (if available)
+- Show help:
+	- Keyboard: h
+- Exit application:
+	- Keyboard: q
+	- Mouse: close the terminal window (sessions remain saved)
+
+## 4. Reproducibility Guide
+
+## 5. Contribution
 
 ### System Overview  
 
