@@ -1,0 +1,1 @@
+pub const DASHSCOPE_API_KEY: &str = "sk-619560edb9664aa5884397e62ac8b712";

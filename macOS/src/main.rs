@@ -1,0 +1,134 @@
+mod app;
+mod tui;
+mod frontend;
+
+use std::{
+    io::{stdout, Stdout},
+    time::Duration,
+    sync::mpsc,
+    env, 
+    process::Command
+};
+
+use anyhow::Result;
+use crossterm::{
+    event::{self, Event, EnableMouseCapture, DisableMouseCapture},
+    execute,
+    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+};
+use frontend::keyboard::handle_key_event;
+use frontend::mouse::handle_mouse_event;
+use ratatui::{backend::CrosstermBackend, Terminal};
+
+use crate::app::{App, BackendEvent};
+use crate::tui::ui as draw_ui;
+
+/// Initialize terminal in raw mode and enter an alternate screen.
+fn setup_terminal() -> Result<Terminal<CrosstermBackend<Stdout>>> {
+    enable_raw_mode()?;
+    let mut out = stdout();
+    execute!(out, EnterAlternateScreen, EnableMouseCapture)?;
+    let backend = CrosstermBackend::new(out);
+    let terminal = Terminal::new(backend)?;
+    Ok(terminal)
+}
+
+/// Restore terminal back to normal mode.
+fn restore_terminal(mut terminal: Terminal<CrosstermBackend<Stdout>>) -> Result<()> {
+    disable_raw_mode()?;
+    execute!(terminal.backend_mut(), LeaveAlternateScreen, DisableMouseCapture)?;
+    terminal.show_cursor()?;
+    Ok(())
+}
+
+fn main() -> Result<()> {
+    // Pop out into a separate macOS Terminal window once.
+    #[cfg(target_os = "macos")]
+    {
+        if env::var("MYCLI_POPPED").is_err() {
+            pop_out_terminal()?;
+            std::process::exit(0);
+        }
+    }
+
+    run_tui()
+}
+
+fn run_tui() -> Result<()> {
+    let mut terminal = setup_terminal()?;
+
+    let mut app = App::new();
+    
+    // Create a channel for backend events (assistant streaming).
+    let (tx, rx) = mpsc::channel::<BackendEvent>();
+    app.backend_tx = Some(tx);
+
+    loop {
+        // 0) Drain backend events before drawing
+        while let Ok(event) = rx.try_recv() {
+            match event {
+                BackendEvent::AssistantChunk { session_idx, branch_idx, chunk } => {
+                    app.append_assistant_chunk(session_idx, branch_idx, chunk);
+                }
+                BackendEvent::AssistantDone { session_idx, branch_idx, } => {
+                    app.save_to_logs().ok();
+                    app.finish_streaming(session_idx, branch_idx);
+                }
+
+            }
+        }
+
+        // 1) Draw the UI based on current state.
+        terminal.draw(|f| draw_ui(f, &mut app))?;
+
+        // 2) Handle input events (non-blocking poll).
+        if event::poll(Duration::from_millis(50))? {
+            match event::read()? {
+                Event::Key(key) => {
+                    // Delegate key handling to keyboard::handle_key_event.
+                    // If it returns true, we should exit the loop.
+                    if handle_key_event(key.code, &mut app)? {
+                        break;
+                    }
+                }
+                Event::Mouse(m) => {
+                    handle_mouse_event(m, &mut app)?;
+                }
+                _ => {
+                    // Ignore other events (e.g. Resize) for now.
+                }
+            }
+        }
+    }
+    // After breaking out of the loop, restore the terminal and exit cleanly.
+    restore_terminal(terminal)?;
+    Ok(())
+}
+
+#[cfg(target_os = "macos")]
+fn pop_out_terminal() -> Result<()> {
+    // Find the current executable path.
+    let exe = env::current_exe()?;
+    let cwd = env::current_dir()?;
+
+    // Small AppleScript snippet:
+    // - activate Terminal
+    // - open a new window running this binary
+    let script = format!(
+        r#"tell application "Terminal"
+    activate
+    do script "cd '{}'; export MYCLI_POPPED=1; '{}'"
+    set number of columns of front window to 120
+    set number of rows of front window to 40
+end tell"#,
+        cwd.display(),
+        exe.display()
+    );
+
+    Command::new("osascript")
+        .arg("-e")
+        .arg(&script)
+        .spawn()?; 
+
+    Ok(())
+}
