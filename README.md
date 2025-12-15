@@ -27,9 +27,7 @@ In addition, the project aims to support agentic workflows and external tool int
 
 ---
 
-## Features  
-
-### System Overview  
+## System Overview  
 
 The system pipeline:  
 
@@ -50,6 +48,10 @@ The system pipeline:
 |          Displays conversation history, tool outputs, agent reasoning steps, and final responses.    |
 +------------------------------------------------------------------------------------------------------+
 ```
+
+---
+
+## Features  
 
 1. **Session Management**  
     - Maintain conversational history across multiple turns within a session.
