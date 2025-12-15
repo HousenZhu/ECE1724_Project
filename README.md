@@ -106,6 +106,43 @@ In addition, the project aims to support agentic workflows and external tool int
     
     The TUI makes the CLI more than a simple REPL with structured displays and useful shortcuts for managing multi-step workflows. Users can interact with models seamlessly from visibility into the agent’s reasoning process.
 
+---
+
+## Reproducibility Guide 
+
+In order to use our CLI, first clone the project repository from GitHub:
+```bash
+git clone https://github.com/HousenZhu/ECE1724_Project.git
+cd ECE1724_Project
+```
+
+Next, choose the appropriate environment directory based on your operating system:
+
+* Windows:
+
+```bash
+cd Windows
+```
+On Windows, the project supports interaction with the language model through the terminal interface. The text-based user interface (TUI) is not available.
+
+* macOS:
+
+```bash
+cd macOS
+```
+On macOS, the project provides a fully functional text-based user interface (TUI) along with some key GUI functionalities for enhanced interaction.
+
+After selecting the environment, build and run the project using Cargo:
+
+```bash
+cargo build
+cargo run
+```
+Once the program starts, users can interact with the language model directly from the terminal or TUI.
+Enjoy exploring the system!
+
+
+
 
 ---
 
