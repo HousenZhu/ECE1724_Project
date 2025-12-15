@@ -69,21 +69,21 @@ The system pipeline:
 
     Agentic Workflow Execution can divide a task into smaller steps, call tools when needed, and repeat the process until the task is finished. In comparison, many Rust CLI tools can only work with single prompts and cannot manage complex workflows. Our system, based on ReAct, can automate tasks such as code refactoring.
 
-3. **Tool Integration (MCP/ACP)**  
-   - Implement support for the Model Context Protocol (MCP) 
-       - MCP: Dynamically discover available tools exposed by MCP servers at runtime.
+3. **Tool Integration (MCP)**  
+    - Implement support for the Model Context Protocol (MCP) to enable structured and safe interaction between the language model and external tools.
+        - Define a set of MCP-compliant tools, including filesystem access and shell command execution.
+        - Expose tools to the model through explicit, well-defined schemas rather than free-form text.
 
-   - Invoke external editors or services safely (e.g., code formatting, file editing, or data lookup).  
-       - Execute tool calls as structured JSON requests.
-       - Capture tool outputs and feed them back into the conversation loop.
-   - Display tool results directly in the CLI session.  
-       - Show both the invoked command/tool and its results in the TUI.
-       - Maintain transparency for users to review what the agent executed.
-    - Provide a unified tool abstraction layer.
-        - Define a common Tool trait for all tools.
-        - Allow newly discovered MCP/ACP tools to plug in without modifying the core agent loop.
+    - Support structured tool invocation through MCP.  
+        - Execute tool calls as deterministic JSON-based requests.  
+        - Capture tool execution results and feed them back into the model’s context for continued reasoning.
 
-    Tool Integration ensures the CLI is not just a simple chat interface, but a flexible automation hub. Unlike typical Rust LLM CLIs that only handle prompts, our system bridges LLM reasoning with external developer tools and editors, enabling richer agentic workflows.
+    - Display tool activity and results directly in the CLI session.  
+        - Show invoked MCP tools and their outputs in the text-based user interface.  
+        - Maintain transparency by allowing users to observe each action performed by the agent.
+
+    Tool integration via MCP ensures that the CLI is not just a simple chat interface, but a flexible automation hub. Unlike typical Rust LLM CLIs that only handle prompts, our system bridges LLM reasoning with external developer tools and editors, enabling richer agentic workflows.
+
 
 4. **Online Model Inference**
    - Enable model inference through online LLM APIs.
