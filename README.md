@@ -7,9 +7,12 @@
 | Tianqi Ju  | 1012870467     | tianqi.ju@mail.utoronto.ca   |
 
 ---
-## Video Demo
 
-A demonstration video of the project is available on YouTube: https://youtu.be/sQuFDGCbiKM
+## Videos
+
+- **Video Demo:** A demonstration of the system is available on YouTube:  https://youtu.be/sQuFDGCbiKM
+
+- **Video Slide Presentation:** A recorded slide presentation explaining the project design and features: https://youtu.be/9JQ1ElIxZUE
 
 ---
 ## Motivation
@@ -137,6 +140,50 @@ The system pipeline:
 
 ---
 
+## Reproducibility Guide
+
+In order to use our CLI, first clone the project repository from GitHub:
+```bash
+git clone https://github.com/HousenZhu/ECE1724_Project.git
+cd ECE1724_Project
+```
+
+This project uses the Qwen model through the DashScope API for online inference.
+For simplicity, the API key is currently defined directly in `api_key.rs`:
+
+```bash
+pub const DASHSCOPE_API_KEY: &str = "your_api_key_here";
+```
+In a production setting, the API key should be managed using environment variables or a secure configuration method.
+
+Next, choose the appropriate environment directory based on your operating system:
+
+* Windows:
+
+```bash
+cd Windows
+```
+For Windows-specific instructions, please refer to the README in the `Windows` directory: [Windows README](Windows/README.md)
+
+On Windows, the project supports interaction with the language model through the terminal interface. The text-based user interface (TUI) is not available.
+
+* macOS:
+
+```bash
+cd macOS
+```
+On macOS, the project provides a fully functional text-based user interface (TUI) along with some key GUI functionalities for enhanced interaction.
+
+After selecting the environment, build and run the project using Cargo:
+
+```bash
+cargo build
+cargo run
+```
+Once the program starts, users can interact with the language model directly from the terminal or TUI.
+Enjoy exploring the system!
+
+---
 ## User's Guide
 
 This section explains how to use the main features of the deliverable through the terminal user interface (TUI). The system supports both keyboard interaction and mouse-based clicking。
@@ -221,53 +268,6 @@ Editing behavior:
 Each session may contain multiple branches. Use '[' and ']' key to switch between branches.
 
 The message view updates immediately when the active branch changes.
-
------
-
-## Reproducibility Guide 
-
-In order to use our CLI, first clone the project repository from GitHub:
-```bash
-git clone https://github.com/HousenZhu/ECE1724_Project.git
-cd ECE1724_Project
-```
-
-This project uses the Qwen model through the DashScope API for online inference.
-For simplicity, the API key is currently defined directly in `api_key.rs`:
-
-```bash
-pub const DASHSCOPE_API_KEY: &str = "your_api_key_here";
-```
-In a production setting, the API key should be managed using environment variables or a secure configuration method.
-
-Next, choose the appropriate environment directory based on your operating system:
-
-* Windows:
-
-```bash
-cd Windows
-```
-For Windows-specific instructions, please refer to the README in the `Windows` directory: [Windows README](Windows/README.md)
-
-On Windows, the project supports interaction with the language model through the terminal interface. The text-based user interface (TUI) is not available.
-
-* macOS:
-
-```bash
-cd macOS
-```
-On macOS, the project provides a fully functional text-based user interface (TUI) along with some key GUI functionalities for enhanced interaction.
-
-After selecting the environment, build and run the project using Cargo:
-
-```bash
-cargo build
-cargo run
-```
-Once the program starts, users can interact with the language model directly from the terminal or TUI.
-Enjoy exploring the system!
-
-
 
 ---
 
