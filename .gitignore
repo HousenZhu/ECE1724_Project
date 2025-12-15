@@ -1,3 +1,4 @@
-/target
-/logs
-/src/api_key.rs
+/Windows/target
+/Windows/logs
+/macOS/target
+/macOS/logs
