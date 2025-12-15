@@ -133,7 +133,7 @@ The system pipeline:
 
 ---
 
-## User guide
+## User's Guide
 
 This section explains how to use the main features of the deliverable through the terminal user interface (TUI). The system supports both keyboard interaction and mouse-based clicking。
 
@@ -145,7 +145,7 @@ After launch, the screen is divided into:
 - Sidebar (if enabled): session list and metadata.
 - interactive UI elements (e.g., buttons): can be activated via keyboard or mouse click.
 
-![alt text](image.png)
+![alt text](screen.png)
 
 ### Sidebar, Help, and Exit
 - Toggle sidebar:
