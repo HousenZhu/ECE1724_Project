@@ -2,12 +2,22 @@
 
 | Name       | Student Number | Preferred Email              |
 |------------|----------------|------------------------------|
-| Housen Zhu | 1008117477     |                              |
+| Housen Zhu | 1008117477     | benjamin.zhu@mail.utoronto.ca|
 | Chufan Ju  | 1011668063     | ethan.ju@mail.utoronto.ca    |
 | Tianqi Ju  | 1012870467     | tianqi.ju@mail.utoronto.ca   |
 
 ---
 
+## Video Slide Presentation
+
+- **Video Slide Presentation:** A recorded slide presentation explaining the project design and features: https://youtu.be/9JQ1ElIxZUE
+
+---
+## Video Demo
+
+- **Video Demo:** A demonstration of the system is available on YouTube:  https://youtu.be/sQuFDGCbiKM
+
+---
 ## Motivation
 Large Language Models (LLMs) are increasingly being integrated into everyday developer workflows including code generation and debugging. Also, LLMs can operate as agents on managing multi-step workflows and interacting with external tools. As one of the most widely used environments, Command-line interfaces (CLIs) are especially suitable for such integration for developers and other technical users valuing its speed and flexibility. A CLI powered by LLMs enables developers to interact with local model inference in their existing workflows with low latency.
 
@@ -101,103 +111,39 @@ The system pipeline:
 
 
 5. **Text User Interface (TUI)**  
-    - Structured terminal-based user interface with message view, input box, and sidebar  
-    - Modal interaction (Normal / Insert) inspired by editor-style workflows  
-    - Combined keyboard and mouse interaction for navigation and control  
-    - Persistent session management and branch-aware conversation navigation  
-    - Inline editing of recent user messages with automatic branch forking  
-    - Streaming LLM responses rendered directly in the terminal
+- Provide an interactive terminal-based user interface for the application.
+  - Display conversation messages, user input, and system feedback in a structured layout.
+  - Separate message view, input area, and optional sidebar for clarity.
+  - Maintain a clean and readable interface within standard terminal constraints.
+
+- Support modal interaction for efficient control.
+  - Use Normal mode for navigation, session control, and commands.
+  - Use Insert mode for typing and editing user prompts.
+  - Allow seamless switching between modes to support fast workflows.
+
+- Enable both keyboard and mouse-based interaction.
+  - Support keyboard shortcuts for navigation and common actions.
+  - Allow mouse clicks to select buttons, list items, and editable components.
+  - Provide equivalent functionality across input methods where applicable.
+
+- Integrate session and branch management into the UI.
+  - Visually indicate the active session and branch.
+  - Allow users to switch sessions and branches directly from the interface.
+  - Ensure UI state stays synchronized with session and branch changes.
+
+- Support inline message editing and interaction.
+  - Allow editing of the most recent user message directly from the UI.
+  - Automatically fork a new branch when submitting an edited message.
+  - Preserve original conversation history while enabling exploration.
+
+- Render model responses in real time.
+  - Stream generated responses into the message view as they arrive.
+  - Improve responsiveness during long generations.
+  - Provide immediate visual feedback for user actions.
 
 ---
 
-## User's Guide
-
-This section explains how to use the main features of the deliverable through the terminal user interface (TUI). The system supports both keyboard interaction and mouse-based clicking。
-
-### Launch and Basic Navigation
-
-After launch, the screen is divided into:
-- Message area: shows conversation history (user + assistant).
-- Input area: where prompts are typed (in insert mode).
-- Sidebar (if enabled): session list and metadata.
-- interactive UI elements (e.g., buttons): can be activated via keyboard or mouse click.
-
-![alt text](screen.png)
-
-### Sidebar, Help, and Exit
-- Toggle sidebar:
-	- Keyboard: s
-	- Mouse: click the sidebar toggle
-- Show help:
-	- Keyboard: h
-- Exit application:
-	- Keyboard: q
-	- Mouse: close the terminal window (sessions remain saved)
-
-### Interaction Modes
-
-The application operates in two modes:
-
-**Normal Mode**  
-Normal mode is used for navigation and control. In this mode, users can:
-- switch sessions and branches,
-- activate UI controls (via keyboard or mouse),
-- toggle sidebar and help views,
-- initiate message editing.
-
-The application starts in Normal mode.
-
-**Insert Mode**  
-Insert mode is used for typing or editing prompt text in the input box.
-
-Mode switching:
-- Press i → enter Insert mode
-- Press Esc → return to Normal mode
-
-### Creating and Navigating Sessions
-
-**Creating a New Session**  
-
-A new session can be created by:
-- pressing n in Normal mode,
-- selecting the New Session button using Tab + Enter,
-- clicking the New Session button with the mouse.
-
-**Navigating Sessions**
-- Keyboard: j / k or arrow keys('↑↓').
-- Mouse: click on a session entry in the session list.
-
-The active session is highlighted in the UI.
-
-### Entering Prompts and Receiving Responses
-1.	Focus the input box (via i or mouse click).
-2.	Type a prompt.
-3.	Submit the prompt by:
-	- pressing Enter, or
-	- clicking "send" button.
-
-Responses from the LLM are streamed and rendered in the message area.
-
-### Editing Previous Messages
-
-To edit the most recent user message:
-- Keyboard: press e in Normal mode.
-- Mouse: click the Edit control displayed under the message.
-
-Editing behavior:
-- the message content is loaded into the input box,
-- the application switches to Insert mode,
-- submitting the edited message forks a new branch to preserve history.
-
-### Branching Conversations
-
-Each session may contain multiple branches. Use '[' and ']' key to switch between branches.
-
-The message view updates immediately when the active branch changes.
-
------
-
-## Reproducibility Guide 
+## Reproducibility Guide
 
 In order to use our CLI, first clone the project repository from GitHub:
 ```bash
@@ -220,6 +166,8 @@ Next, choose the appropriate environment directory based on your operating syste
 ```bash
 cd Windows
 ```
+For Windows-specific instructions, please refer to the README in the `Windows` directory: [Windows README](Windows/README.md)
+
 On Windows, the project supports interaction with the language model through the terminal interface. The text-based user interface (TUI) is not available.
 
 * macOS:
@@ -238,36 +186,119 @@ cargo run
 Once the program starts, users can interact with the language model directly from the terminal or TUI.
 Enjoy exploring the system!
 
+---
+## User's Guide
 
+This section explains how to use the main features of the deliverable through the terminal user interface (TUI). The system supports both keyboard interaction and mouse-based clicking。
+
+### 1. Launch and Basic Navigation
+
+After launch, the screen is divided into:
+- Message area: shows conversation history (user + assistant).
+- Input area: where prompts are typed (in insert mode).
+- Sidebar (if enabled): session list and metadata.
+- interactive UI elements (e.g., buttons): can be activated via keyboard or mouse click.
+
+![alt text](screen.png)
+
+### 2. Sidebar, Help, and Exit
+- Toggle sidebar:
+	- Keyboard: s
+	- Mouse: click the sidebar toggle
+- Show help:
+	- Keyboard: h
+- Exit application:
+	- Keyboard: q
+	- Mouse: close the terminal window (sessions remain saved)
+
+### 3. Interaction Modes
+
+The application operates in two modes:
+
+**Normal Mode**  
+Normal mode is used for navigation and control. In this mode, users can:
+- switch sessions and branches,
+- activate UI controls (via keyboard or mouse),
+- toggle sidebar and help views,
+- initiate message editing.
+
+The application starts in Normal mode.
+
+**Insert Mode**  
+Insert mode is used for typing or editing prompt text in the input box.
+
+Mode switching:
+- Press i → enter Insert mode
+- Press Esc → return to Normal mode
+
+### 4. Creating and Navigating Sessions
+
+**Creating a New Session**  
+
+A new session can be created by:
+- pressing n in Normal mode,
+- selecting the New Session button using Tab + Enter,
+- clicking the New Session button with the mouse.
+
+**Navigating Sessions**
+- Keyboard: j / k or arrow keys('↑↓').
+- Mouse: click on a session entry in the session list.
+
+The active session is highlighted in the UI.
+
+### 5. Entering Prompts and Receiving Responses
+1.	Focus the input box (via i or mouse click).
+2.	Type a prompt.
+3.	Submit the prompt by:
+	- pressing Enter, or
+	- clicking "send" button.
+
+Responses from the LLM are streamed and rendered in the message area.
+
+### 6. Editing Previous Messages
+
+To edit the most recent user message:
+- Keyboard: press e in Normal mode.
+- Mouse: click the Edit control displayed under the message.
+
+Editing behavior:
+- the message content is loaded into the input box,
+- the application switches to Insert mode,
+- submitting the edited message forks a new branch to preserve history.
+
+### 7. Branching Conversations
+
+Each session may contain multiple branches. Use '[' and ']' key to switch between branches.
+
+The message view updates immediately when the active branch changes.
 
 ---
 
 ## Contributions 
 
-| Task / Feature                          | Housen Zhu (MCP & Workflow) | Chufan Ju (Context & backends) | Tianqi Ju (UI) |
-|-----------------------------------------|-----------------------------|-----------------------------------|----------------|
-| Set up local inference with Ollama      | ✅                   |                               |                             |
-| Set up local inference with Qwen3      |                        | ✅                          |                             |
-| implement Rust inference backends       |                       | ✅                             |                               |
-| Implement inference API for CLI         | ✅                    |                               |                             |
+| Task / Feature                         | Housen Zhu (MCP & Workflow) | Chufan Ju (Context & backends) | Tianqi Ju (UI) |
+|----------------------------------------|-----------------------------|-----------------------------------|----------------|
+| Set up inference with Qwen3            |                        | ✅                          |                             |
+| implement Rust inference backends      |                       | ✅                             |                               |
+| Implement inference API for CLI        | ✅                    |                               |                             |
 | Support streaming token-by-token output |                     | ✅                              |                             |
-| Session context management              |                      | ✅                             |                             |
-| Save/restore sessions                   |                      | ✅                             |                             |
-| Branching task histories                |                      | ✅                             |                             |
+| Session context management             |                      | ✅                             |                             |
+| Save/restore sessions                  |                      | ✅                             |                             |
+| Branching task histories               |                      | ✅                             |                             |
 | Implement agentic workflow decomposition | ✅                    |                              |                             |
-| MCP protocol integration                | ✅                     |                              |                             |
-| Tool discovery via MCP servers          | ✅                    |                              |                             |
-| Tool invocation & result handling       | ✅                     |                              |                             |
-| Build CLI with Ratatui                  |                      |                               | ✅                           |
-| Input/output panes (prompts & responses)|                      |                               | ✅                           |
-| Scrolling history & navigation          |                      |                               | ✅                           |
-| Display session state & tool results    |                      |                               | ✅                           |
-| Error handling & status messages        |                      |                               | ✅                           |
-| Editing messages to fork a branch        |                      |                               | ✅                           |
-| Keyboard shortcuts for context/session  |                      |                               | ✅                           |
-| System integration (all modules)        | ✅                    |                               |                            |
-| Testing & debugging                     | ✅                    | ✅                             | ✅                           |
-| Documentation                           | ✅                    | ✅                             | ✅                           ||
+| MCP protocol integration               | ✅                     |                              |                             |
+| Tool discovery via MCP servers         | ✅                    |                              |                             |
+| Tool invocation & result handling      | ✅                     |                              |                             |
+| Build CLI with Ratatui                 |                      |                               | ✅                           |
+| Input/output panes (prompts & responses) |                      |                               | ✅                           |
+| Scrolling history & navigation         |                      |                               | ✅                           |
+| Display session state & tool results   |                      |                               | ✅                           |
+| Error handling & status messages       |                      |                               | ✅                           |
+| Editing messages to fork a branch      |                      |                               | ✅                           |
+| Keyboard shortcuts for context/session |                      |                               | ✅                           |
+| System integration (all modules)       | ✅                    |                               |                            |
+| Testing & debugging                    | ✅                    | ✅                             | ✅                           |
+| Documentation                          | ✅                    | ✅                             | ✅                           ||
 
 ---
 
