@@ -159,6 +159,13 @@ pub const DASHSCOPE_API_KEY: &str = "your_api_key_here";
 ```
 In a production setting, the API key should be managed using environment variables or a secure configuration method.
 
+if encountering a api error, try to use the backup api key:
+
+```bash
+// backup api key if needed
+// pub const DASHSCOPE_API_KEY: &str = "sk-7ae122c42ceb4240aaa7ad34df284362";
+```
+
 Next, choose the appropriate environment directory based on your operating system:
 
 * Windows:
